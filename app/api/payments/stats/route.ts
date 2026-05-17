@@ -1,0 +1,95 @@
+import { createClient } from "@/lib/supabase/server"
+import { NextRequest, NextResponse } from "next/server"
+
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = await createClient()
+    
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+    }
+
+    // Obtener parametros de fecha
+    const { searchParams } = new URL(request.url)
+    const fromDate = searchParams.get("from")
+    const toDate = searchParams.get("to")
+
+    // Calcular fechas de inicio y fin
+    let startDate: Date
+    let endDate: Date
+
+    if (fromDate && toDate) {
+      startDate = new Date(fromDate)
+      endDate = new Date(toDate)
+      endDate.setHours(23, 59, 59, 999) // Incluir todo el día final
+    } else {
+      // Default: último mes
+      endDate = new Date()
+      startDate = new Date()
+      startDate.setDate(startDate.getDate() - 30)
+    }
+
+    // Calcular días entre fechas
+    const diffTime = Math.abs(endDate.getTime() - startDate.getTime())
+    const daysToShow = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+
+    // Obtener pagos del usuario en el rango de fechas
+    const { data: payments, error } = await supabase
+      .from("payments")
+      .select("monto, created_at")
+      .eq("user_id", user.id)
+      .gte("created_at", startDate.toISOString())
+      .lte("created_at", endDate.toISOString())
+      .order("created_at", { ascending: true })
+
+    if (error) {
+      console.error("Error fetching stats:", error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    // Calcular totales
+    const totalMonto = payments?.reduce((sum, p) => sum + Number(p.monto), 0) || 0
+    const totalPagos = payments?.length || 0
+
+    // Agrupar por dia para el grafico
+    const dailyData: Record<string, number> = {}
+    payments?.forEach((p) => {
+      const date = new Date(p.created_at).toISOString().split("T")[0]
+      dailyData[date] = (dailyData[date] || 0) + Number(p.monto)
+    })
+
+    // Convertir a array para el grafico
+    const chartData = []
+    for (let i = 0; i < daysToShow; i++) {
+      const date = new Date(startDate)
+      date.setDate(date.getDate() + i)
+      const dateStr = date.toISOString().split("T")[0]
+      chartData.push({
+        date: dateStr,
+        monto: dailyData[dateStr] || 0,
+      })
+    }
+
+    // Calcular acumulado
+    let accumulated = 0
+    const accumulatedData = chartData.map((d) => {
+      accumulated += d.monto
+      return {
+        date: d.date,
+        monto: d.monto,
+        acumulado: accumulated,
+      }
+    })
+
+    return NextResponse.json({
+      totalMonto,
+      totalPagos,
+      chartData: accumulatedData,
+    })
+  } catch (error) {
+    console.error("Error:", error)
+    return NextResponse.json({ error: "Error interno" }, { status: 500 })
+  }
+}

@@ -1,0 +1,101 @@
+nombre,telefono,monto,descripcion
+Juan González,5493755123456,2500,Consulta profesional
+María Rodríguez,5493755234567,1500,Servicio mensual
+Carlos García,5493755345678,3500,Reparación
+Ana Fernández,5493755456789,5000,Asesoría
+Pedro López,5493755567890,2000,Diseño web
+Lucía Martínez,5493755678901,7500,Mantenimiento
+Diego Sánchez,5493755789012,1000,Capacitación
+Sofía Pérez,5493755890123,4500,Instalación
+Martín Gómez,5493755901234,3000,Desarrollo
+Valentina Díaz,5493755012345,10000,Soporte técnico
+Lucas Romero,5493756123456,500,Limpieza
+Camila Sosa,5493756234567,15000,Transporte
+Nicolás Torres,5493756345678,2500,Catering
+Isabella Álvarez,5493756456789,4000,Fotografía
+Matías Ruiz,5493756567890,20000,Marketing digital
+Florencia Ramírez,5493756678901,1500,Consulta profesional
+Tomás Flores,5493756789012,3500,Servicio mensual
+Julieta Acosta,5493756890123,2000,Reparación
+Agustín Medina,5493756901234,7500,Asesoría
+Catalina Benítez,5493756012345,5000,Diseño web
+Santiago González,5493757123456,1000,Mantenimiento
+Emilia Rodríguez,5493757234567,4500,Capacitación
+Benjamín García,5493757345678,3000,Instalación
+Victoria Fernández,5493757456789,10000,Desarrollo
+Joaquín López,5493757567890,2500,Soporte técnico
+Antonella Martínez,5493757678901,500,Limpieza
+Maximiliano Sánchez,5493757789012,15000,Transporte
+Milagros Pérez,5493757890123,4000,Catering
+Francisco Gómez,5493757901234,20000,Fotografía
+Rocío Díaz,5493757012345,1500,Marketing digital
+Juan Romero,5493758123456,3500,Consulta profesional
+María Sosa,5493758234567,2000,Servicio mensual
+Carlos Torres,5493758345678,7500,Reparación
+Ana Álvarez,5493758456789,5000,Asesoría
+Pedro Ruiz,5493758567890,1000,Diseño web
+Lucía Ramírez,5493758678901,4500,Mantenimiento
+Diego Flores,5493758789012,3000,Capacitación
+Sofía Acosta,5493758890123,10000,Instalación
+Martín Medina,5493758901234,2500,Desarrollo
+Valentina Benítez,5493758012345,500,Soporte técnico
+Lucas González,5493759123456,15000,Limpieza
+Camila Rodríguez,5493759234567,4000,Transporte
+Nicolás García,5493759345678,20000,Catering
+Isabella Fernández,5493759456789,1500,Fotografía
+Matías López,5493759567890,3500,Marketing digital
+Florencia Martínez,5493759678901,2000,Consulta profesional
+Tomás Sánchez,5493759789012,7500,Servicio mensual
+Julieta Pérez,5493759890123,5000,Reparación
+Agustín Gómez,5493759901234,1000,Asesoría
+Catalina Díaz,5493759012345,4500,Diseño web
+Santiago Romero,5493750123456,3000,Mantenimiento
+Emilia Sosa,5493750234567,10000,Capacitación
+Benjamín Torres,5493750345678,2500,Instalación
+Victoria Álvarez,5493750456789,500,Desarrollo
+Joaquín Ruiz,5493750567890,15000,Soporte técnico
+Antonella Ramírez,5493750678901,4000,Limpieza
+Maximiliano Flores,5493750789012,20000,Transporte
+Milagros Acosta,5493750890123,1500,Catering
+Francisco Medina,5493750901234,3500,Fotografía
+Rocío Benítez,5493750012345,2000,Marketing digital
+Juan Martínez,5493751123456,7500,Consulta profesional
+María López,5493751234567,5000,Servicio mensual
+Carlos Sánchez,5493751345678,1000,Reparación
+Ana Pérez,5493751456789,4500,Asesoría
+Pedro Gómez,5493751567890,3000,Diseño web
+Lucía Díaz,5493751678901,10000,Mantenimiento
+Diego Romero,5493751789012,2500,Capacitación
+Sofía Sosa,5493751890123,500,Instalación
+Martín Torres,5493751901234,15000,Desarrollo
+Valentina Álvarez,5493751012345,4000,Soporte técnico
+Lucas Ruiz,5493752123456,20000,Limpieza
+Camila Ramírez,5493752234567,1500,Transporte
+Nicolás Flores,5493752345678,3500,Catering
+Isabella Acosta,5493752456789,2000,Fotografía
+Matías Medina,5493752567890,7500,Marketing digital
+Florencia Benítez,5493752678901,5000,Consulta profesional
+Tomás González,5493752789012,1000,Servicio mensual
+Julieta Rodríguez,5493752890123,4500,Reparación
+Agustín García,5493752901234,3000,Asesoría
+Catalina Fernández,5493752012345,10000,Diseño web
+Santiago López,5493753123456,2500,Mantenimiento
+Emilia Martínez,5493753234567,500,Capacitación
+Benjamín Sánchez,5493753345678,15000,Instalación
+Victoria Pérez,5493753456789,4000,Desarrollo
+Joaquín Gómez,5493753567890,20000,Soporte técnico
+Antonella Díaz,5493753678901,1500,Limpieza
+Maximiliano Romero,5493753789012,3500,Transporte
+Milagros Sosa,5493753890123,2000,Catering
+Francisco Torres,5493753901234,7500,Fotografía
+Rocío Álvarez,5493753012345,5000,Marketing digital
+Juan Ruiz,5493754123456,1000,Consulta profesional
+María Ramírez,5493754234567,4500,Servicio mensual
+Carlos Flores,5493754345678,3000,Reparación
+Ana Acosta,5493754456789,10000,Asesoría
+Pedro Medina,5493754567890,2500,Diseño web
+Lucía Benítez,5493754678901,500,Mantenimiento
+Diego González,5493754789012,15000,Capacitación
+Sofía Rodríguez,5493754890123,4000,Instalación
+Martín García,5493754901234,20000,Desarrollo
+Valentina Fernández,5493754012345,1500,Soporte técnico
