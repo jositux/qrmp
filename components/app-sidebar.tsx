@@ -11,6 +11,7 @@ import {
   LogOut,
   Loader2,
   Home,
+  CircleCheck,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
@@ -25,6 +26,7 @@ interface AppSidebarProps {
 
 const navigation = [
   { name: "Dashboard", href: "/panel", icon: BarChart3 },
+  { name: "Pagos Recibidos", href: "/panel/pagos-recibidos", icon: CircleCheck },
   { name: "Cobros", href: "/panel/cobros", icon: QrCode },
   { name: "Configuracion", href: "/panel/configuracion", icon: Settings },
   { name: "Integraciones", href: "/panel/integraciones", icon: Puzzle },
