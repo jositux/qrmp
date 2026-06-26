@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-provider"
+import { NotificationBell } from "@/components/notification-bell"
 import type { User } from "@supabase/supabase-js"
 
 interface AppSidebarProps {
@@ -94,6 +95,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <NotificationBell />
           <ThemeToggle />
           <Button
             variant="ghost"
