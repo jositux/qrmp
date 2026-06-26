@@ -58,11 +58,20 @@ export async function GET(request: NextRequest) {
     const totalCobrado = approvedPayments.reduce((sum, p) => sum + Number(p.monto), 0)
     const totalPagados = approvedPayments.length
 
-    // Agrupar por dia para el grafico
+    // Agrupar por dia para el grafico (solicitado)
     const dailyData: Record<string, number> = {}
     payments?.forEach((p) => {
       const date = new Date(p.created_at).toISOString().split("T")[0]
       dailyData[date] = (dailyData[date] || 0) + Number(p.monto)
+    })
+
+    // Agrupar pagos aprobados por dia (usando paid_at si existe, sino created_at)
+    const dailyPaid: Record<string, number> = {}
+    approvedPayments.forEach((p) => {
+      const dateStr = p.paid_at
+        ? new Date(p.paid_at).toISOString().split("T")[0]
+        : new Date(p.created_at).toISOString().split("T")[0]
+      dailyPaid[dateStr] = (dailyPaid[dateStr] || 0) + Number(p.monto)
     })
 
     // Convertir a array para el grafico
@@ -74,17 +83,22 @@ export async function GET(request: NextRequest) {
       chartData.push({
         date: dateStr,
         monto: dailyData[dateStr] || 0,
+        cobrado: dailyPaid[dateStr] || 0,
       })
     }
 
-    // Calcular acumulado
+    // Calcular acumulados
     let accumulated = 0
+    let accumulatedCobrado = 0
     const accumulatedData = chartData.map((d) => {
       accumulated += d.monto
+      accumulatedCobrado += d.cobrado
       return {
         date: d.date,
         monto: d.monto,
         acumulado: accumulated,
+        cobrado: d.cobrado,
+        acumuladoCobrado: accumulatedCobrado,
       }
     })
 
