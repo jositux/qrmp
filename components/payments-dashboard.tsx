@@ -476,15 +476,22 @@ export function PaymentsDashboard() {
                 </div>
               </div>
             </div>
-            {/* Legend manual */}
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 bg-sky-500 inline-block rounded" />
-                Solicitado
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 bg-emerald-500 inline-block rounded" />
-                Cobrado
+            {/* Legend + periodo activo */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-0.5 bg-sky-500 inline-block rounded" />
+                  Solicitado
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-0.5 bg-emerald-500 inline-block rounded" />
+                  Cobrado
+                </span>
+              </div>
+              <span className="text-[10px] sm:text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                {new Date(dateFrom).toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}
+                {" — "}
+                {new Date(dateTo).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}
               </span>
             </div>
           </div>
@@ -570,7 +577,12 @@ export function PaymentsDashboard() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <CardTitle>Historial de cobros</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  Historial de cobros
+                  <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                    {filteredPayments.length}{filteredPayments.length !== allPayments.length ? ` de ${allPayments.length}` : ""}
+                  </span>
+                </CardTitle>
                 <CardDescription>Todos los QR generados</CardDescription>
               </div>
               <div className="relative w-full sm:w-64">
@@ -583,82 +595,74 @@ export function PaymentsDashboard() {
                 />
               </div>
             </div>
-            {/* Filters */}
-            <div className="flex flex-col gap-2">
-              {/* Status Filter */}
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-1">
-                  <CircleCheck className="h-3 w-3" />
-                  Estado:
+            {/* Filters — una sola fila con separador */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Estado */}
+              <span className="text-xs text-muted-foreground hidden sm:block">Estado:</span>
+              <Button
+                variant={selectedStatus === null ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedStatus(null)}
+                className="h-7 text-xs"
+              >
+                Todos
+              </Button>
+              <Button
+                variant={selectedStatus === "pending" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedStatus(selectedStatus === "pending" ? null : "pending")}
+                className="h-7 text-xs gap-1.5"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
+                Pendiente
+              </Button>
+              <Button
+                variant={selectedStatus === "approved" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedStatus(selectedStatus === "approved" ? null : "approved")}
+                className="h-7 text-xs gap-1.5"
+              >
+                <CircleCheck className="h-3 w-3 text-green-500" />
+                Pagado
+              </Button>
+
+              {/* Separador */}
+              {categories.length > 0 && (
+                <span className="w-px h-5 bg-border mx-1 hidden sm:block" />
+              )}
+
+              {/* Categorías */}
+              {categories.length > 0 && (
+                <span className="text-xs text-muted-foreground hidden sm:block">
+                  <Tag className="h-3 w-3 inline mr-1" />
                 </span>
+              )}
+              {categories.map((category) => (
                 <Button
-                  variant={selectedStatus === null ? "default" : "outline"}
+                  key={category.id}
+                  variant={selectedCategoryId === category.id ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setSelectedStatus(null)}
-                  className="h-7 text-xs"
-                >
-                  Todos
-                </Button>
-                <Button
-                  variant={selectedStatus === "pending" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedStatus(selectedStatus === "pending" ? null : "pending")}
+                  onClick={() => setSelectedCategoryId(selectedCategoryId === category.id ? null : category.id)}
                   className="h-7 text-xs gap-1.5"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
-                  Pendiente
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: category.color }}
+                  />
+                  {category.nombre}
                 </Button>
+              ))}
+              {(selectedCategoryId || selectedStatus) && (
                 <Button
-                  variant={selectedStatus === "approved" ? "default" : "outline"}
+                  variant="ghost"
                   size="sm"
-                  onClick={() => setSelectedStatus(selectedStatus === "approved" ? null : "approved")}
-                  className="h-7 text-xs gap-1.5"
+                  onClick={() => { setSelectedCategoryId(null); setSelectedStatus(null) }}
+                  className="h-7 text-xs text-muted-foreground"
                 >
-                  <CircleCheck className="h-3 w-3 text-green-500" />
-                  Pagado
+                  <X className="h-3 w-3 mr-1" />
+                  Limpiar
                 </Button>
-              </div>
-              {/* Category Filter */}
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Tag className="h-3 w-3" />
-                  Categoría:
-                </span>
-                <Button
-                  variant={selectedCategoryId === null ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategoryId(null)}
-                  className="h-7 text-xs"
-                >
-                  Todas
-                </Button>
-                {categories.map((category) => (
-                  <Button
-                    key={category.id}
-                    variant={selectedCategoryId === category.id ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedCategoryId(category.id)}
-                    className="h-7 text-xs gap-1.5"
-                  >
-                    <span
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: category.color }}
-                    />
-                    {category.nombre}
-                  </Button>
-                ))}
-                {selectedCategoryId && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedCategoryId(null)}
-                    className="h-7 text-xs text-muted-foreground"
-                  >
-                    <X className="h-3 w-3 mr-1" />
-                    Limpiar
-                  </Button>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </CardHeader>

@@ -148,33 +148,10 @@ export function PaymentForm() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Monto destacado */}
-              <div className="space-y-2">
-                <Label htmlFor="amount" className="text-base font-medium">Monto a cobrar (ARS)</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  min="1"
-                  step="0.01"
-                  required
-                  className="
-    h-14 text-2xl font-semibold text-center 
-    placeholder:text-muted-foreground/60 placeholder:font-normal
-    /* Cambios para Desktop */
-    md:h-20 md:text-3xl md:py-8 
-    lg:h-24 lg:text-3xl
-    transition-all duration-200 focus-visible:ring-offset-2
-  "
-                />
-              </div>
-
-              {/* Nombre y Telefono en 2 columnas en desktop */}
+              {/* Nombre y WhatsApp — primero identificamos al cliente */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="clientName" className="text-sm">Nombre</Label>
+                  <Label htmlFor="clientName" className="text-sm font-medium">Nombre del cliente</Label>
                   <Input
                     id="clientName"
                     type="text"
@@ -182,10 +159,11 @@ export function PaymentForm() {
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                     className="h-11 placeholder:text-muted-foreground/60"
+                    autoFocus
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="clientPhone" className="text-sm">WhatsApp</Label>
+                  <Label htmlFor="clientPhone" className="text-sm font-medium">WhatsApp <span className="text-muted-foreground font-normal">(opcional)</span></Label>
                   <Input
                     id="clientPhone"
                     type="tel"
@@ -197,10 +175,26 @@ export function PaymentForm() {
                 </div>
               </div>
 
+              {/* Monto destacado */}
+              <div className="space-y-2">
+                <Label htmlFor="amount" className="text-base font-medium">Monto a cobrar <span className="text-muted-foreground font-normal text-sm">ARS</span></Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  min="1"
+                  step="0.01"
+                  required
+                  className="h-14 text-2xl font-semibold text-center placeholder:text-muted-foreground/60 placeholder:font-normal md:h-20 md:text-3xl md:py-8 lg:h-24 lg:text-3xl transition-all duration-200 focus-visible:ring-offset-2"
+                />
+              </div>
+
               {/* Descripcion y Categoria */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title" className="text-sm">Descripcion</Label>
+                  <Label htmlFor="title" className="text-sm font-medium">Descripción <span className="text-muted-foreground font-normal">(opcional)</span></Label>
                   <Input
                     id="title"
                     type="text"
@@ -211,7 +205,7 @@ export function PaymentForm() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm">Categoria</Label>
+                  <Label className="text-sm font-medium">Categoría <span className="text-muted-foreground font-normal">(opcional)</span></Label>
                   <CategorySelector
                     value={categoryId}
                     onChange={(id) => setCategoryId(id)}
