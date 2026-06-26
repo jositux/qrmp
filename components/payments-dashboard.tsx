@@ -52,6 +52,8 @@ interface Payment {
   category_id: string | null
   category: Category | null
   created_at: string
+  status: string | null
+  mp_payment_id: string | null
 }
 
 interface Stats {
@@ -60,6 +62,23 @@ interface Stats {
   totalCobrado: number
   totalPagados: number
   chartData: { date: string; monto: number; acumulado: number; cobrado: number; acumuladoCobrado: number }[]
+}
+
+function StatusBadge({ status, mpPaymentId }: { status: string | null; mpPaymentId: string | null }) {
+  if (status === "approved") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+        <CircleCheck className="h-3 w-3" />
+        Pagado
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-500">
+      <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 dark:bg-yellow-400" />
+      Pendiente
+    </span>
+  )
 }
 
 export function PaymentsDashboard() {
@@ -641,15 +660,18 @@ export function PaymentsDashboard() {
                       </div>
                       <p className="text-lg font-bold text-primary">{formatCurrency(payment.monto)}</p>
                     </div>
-                    {payment.category && (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-muted">
-                        <span
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: payment.category.color }}
-                        />
-                        {payment.category.nombre}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <StatusBadge status={payment.status} mpPaymentId={payment.mp_payment_id} />
+                      {payment.category && (
+                        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-muted">
+                          <span
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: payment.category.color }}
+                          />
+                          {payment.category.nombre}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 pt-2 border-t border-border/50">
                       <Button
                         variant="outline"
@@ -695,6 +717,7 @@ export function PaymentsDashboard() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Nombre</TableHead>
+                      <TableHead>Estado</TableHead>
                       <TableHead>Telefono</TableHead>
                       <TableHead className="text-right">Monto</TableHead>
                       <TableHead className="hidden lg:table-cell">Categoria</TableHead>
@@ -707,6 +730,9 @@ export function PaymentsDashboard() {
                     {filteredPayments.map((payment) => (
                       <TableRow key={payment.id}>
                         <TableCell className="font-medium">{payment.nombre}</TableCell>
+                        <TableCell>
+                          <StatusBadge status={payment.status} mpPaymentId={payment.mp_payment_id} />
+                        </TableCell>
                         <TableCell className="text-muted-foreground">
                           {payment.telefono || "-"}
                         </TableCell>

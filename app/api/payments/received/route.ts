@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 
     let query = supabase
       .from("payments")
-      .select("id, nombre, monto, descripcion, paid_at, payment_method", { count: "exact" })
+      .select("id, nombre, monto, descripcion, paid_at, payment_method, mp_payment_id", { count: "exact" })
       .eq("user_id", user.id)
       .eq("status", "approved")
       .order("paid_at", { ascending: false })

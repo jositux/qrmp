@@ -17,6 +17,7 @@ interface ReceivedPayment {
   descripcion: string | null
   paid_at: string
   payment_method: string | null
+  mp_payment_id: string | null
 }
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
@@ -229,6 +230,9 @@ export default function PagosRecibidosPage() {
                         <p className="text-xs text-muted-foreground truncate max-w-[160px]">{payment.descripcion}</p>
                       )}
                     </div>
+                    {payment.mp_payment_id && (
+                      <p className="text-[10px] text-muted-foreground/60 font-mono">MP# {payment.mp_payment_id}</p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -243,6 +247,7 @@ export default function PagosRecibidosPage() {
                       <TableHead>Fecha y hora</TableHead>
                       <TableHead>Método de pago</TableHead>
                       <TableHead>Descripción</TableHead>
+                      <TableHead className="text-muted-foreground">ID MP</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -260,6 +265,9 @@ export default function PagosRecibidosPage() {
                         </TableCell>
                         <TableCell className="text-muted-foreground max-w-[200px] truncate">
                           {payment.descripcion || "-"}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground/60">
+                          {payment.mp_payment_id || "-"}
                         </TableCell>
                       </TableRow>
                     ))}
