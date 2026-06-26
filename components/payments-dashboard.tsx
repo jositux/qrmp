@@ -363,9 +363,9 @@ export function PaymentsDashboard() {
           <CardContent className="py-0 px-3 h-16 sm:h-24 flex flex-col justify-center">
             <div className="flex items-center justify-between mb-0.5">
               <p className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Total</p>
-              <DollarSign className="h-3.5 w-3.5 text-[#6D58BB]" />
+              <DollarSign className="h-3.5 w-3.5 text-primary" />
             </div>
-            <div className="text-sm sm:text-2xl font-medium text-[#080936] dark:text-white truncate leading-none">
+            <div className="text-sm sm:text-2xl font-medium text-foreground truncate leading-none">
               {formatCurrency(stats?.totalMonto || 0)}
             </div>
           </CardContent>
@@ -376,9 +376,9 @@ export function PaymentsDashboard() {
           <CardContent className="py-0 px-3 h-16 sm:h-24 flex flex-col justify-center">
             <div className="flex items-center justify-between mb-0.5">
               <p className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">QRs</p>
-              <QrCode className="h-3.5 w-3.5 text-[#6D58BB]" />
+              <QrCode className="h-3.5 w-3.5 text-primary" />
             </div>
-            <div className="text-sm sm:text-2xl font-medium text-[#080936] dark:text-white leading-none">
+            <div className="text-sm sm:text-2xl font-medium text-foreground leading-none">
               {stats?.totalPagos || 0}
             </div>
           </CardContent>
@@ -389,9 +389,9 @@ export function PaymentsDashboard() {
           <CardContent className="py-0 px-3 h-16 sm:h-24 flex flex-col justify-center">
             <div className="flex items-center justify-between mb-0.5">
               <p className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Promedio</p>
-              <TrendingUp className="h-3.5 w-3.5 text-[#6D58BB]" />
+              <TrendingUp className="h-3.5 w-3.5 text-primary" />
             </div>
-            <div className="text-sm sm:text-2xl font-medium text-[#080936] dark:text-white truncate leading-none">
+            <div className="text-sm sm:text-2xl font-medium text-foreground truncate leading-none">
               {formatCurrency(stats?.totalPagos ? stats.totalMonto / stats.totalPagos : 0)}
             </div>
           </CardContent>

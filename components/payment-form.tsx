@@ -162,7 +162,7 @@ export function PaymentForm() {
                   required
                   className="
     h-14 text-2xl font-semibold text-center 
-    placeholder:text-muted-foreground/40 placeholder:font-normal
+    placeholder:text-muted-foreground/60 placeholder:font-normal
     /* Cambios para Desktop */
     md:h-20 md:text-3xl md:py-8 
     lg:h-24 lg:text-3xl
@@ -181,7 +181,7 @@ export function PaymentForm() {
                     placeholder="Juan Perez"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
-                    className="h-11 placeholder:text-muted-foreground/40"
+                    className="h-11 placeholder:text-muted-foreground/60"
                   />
                 </div>
                 <div className="space-y-2">
@@ -192,7 +192,7 @@ export function PaymentForm() {
                     placeholder="5491155551234"
                     value={clientPhone}
                     onChange={(e) => setClientPhone(e.target.value)}
-                    className="h-11 placeholder:text-muted-foreground/40"
+                    className="h-11 placeholder:text-muted-foreground/60"
                   />
                 </div>
               </div>
@@ -207,7 +207,7 @@ export function PaymentForm() {
                     placeholder="Servicio o producto"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="h-11 placeholder:text-muted-foreground/40"
+                    className="h-11 placeholder:text-muted-foreground/60"
                   />
                 </div>
                 <div className="space-y-2">
