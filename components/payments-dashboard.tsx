@@ -33,6 +33,8 @@ import {
 } from "@/components/ui/select"
 import { Search, Trash2, Loader2, TrendingUp, QrCode, DollarSign, Eye, Send, Tag, X, Plus, Calendar, Copy, Check, ExternalLink, CircleCheck, ArrowRight } from "lucide-react"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Link from "next/link"
 import { formatCurrency, formatDateAR } from "@/lib/format"
 
@@ -103,6 +105,9 @@ export function PaymentsDashboard() {
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null)
   const [copied, setCopied] = useState(false)
   const [qrLoaded, setQrLoaded] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkDeletePending, setBulkDeletePending] = useState(false)
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
 
   const fetchPayments = useCallback(async () => {
     try {
@@ -199,6 +204,41 @@ export function PaymentsDashboard() {
     }
   }
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    const pendingIds = filteredPayments.filter((p) => p.status !== "approved").map((p) => p.id)
+    if (selectedIds.size === pendingIds.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(pendingIds))
+    }
+  }
+
+  const confirmBulkDelete = async () => {
+    setIsBulkDeleting(true)
+    setBulkDeletePending(false)
+    try {
+      const ids = Array.from(selectedIds).join(",")
+      const res = await fetch(`/api/payments?ids=${ids}`, { method: "DELETE" })
+      if (res.ok) {
+        setAllPayments((prev) => prev.filter((p) => !selectedIds.has(p.id)))
+        setSelectedIds(new Set())
+        fetchStats()
+      }
+    } catch (error) {
+      console.error("Error bulk deleting payments:", error)
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }
+
   const getQrUrl = (paymentUrl: string) => {
     return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(paymentUrl)}`
   }
@@ -238,6 +278,7 @@ export function PaymentsDashboard() {
   }
 
   return (
+    <TooltipProvider delayDuration={300}>
     <div className="space-y-6">
       {/* Payment Details Dialog */}
       <Dialog open={!!selectedPayment} onOpenChange={() => setSelectedPayment(null)}>
@@ -358,6 +399,27 @@ export function PaymentsDashboard() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={bulkDeletePending} onOpenChange={setBulkDeletePending}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar {selectedIds.size} cobro{selectedIds.size > 1 ? "s" : ""}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente los {selectedIds.size} cobros seleccionados. No se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmBulkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar {selectedIds.size} cobro{selectedIds.size > 1 ? "s" : ""}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!paymentToDelete} onOpenChange={() => setPaymentToDelete(null)}>
@@ -666,6 +728,38 @@ export function PaymentsDashboard() {
             </div>
           </div>
         </CardHeader>
+        {/* Bulk action bar */}
+        {selectedIds.size > 0 && (
+          <div className="mx-6 mb-2 flex items-center justify-between gap-3 rounded-xl bg-primary/10 border border-primary/20 px-4 py-2.5">
+            <span className="text-sm font-medium text-primary">
+              {selectedIds.size} seleccionado{selectedIds.size > 1 ? "s" : ""}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-muted-foreground"
+                onClick={() => setSelectedIds(new Set())}
+              >
+                <X className="h-3 w-3 mr-1" />
+                Deseleccionar
+              </Button>
+              <Button
+                size="sm"
+                className="h-7 text-xs bg-destructive text-white hover:bg-destructive/90"
+                onClick={() => setBulkDeletePending(true)}
+                disabled={isBulkDeleting}
+              >
+                {isBulkDeleting ? (
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                ) : (
+                  <Trash2 className="h-3 w-3 mr-1" />
+                )}
+                Eliminar {selectedIds.size}
+              </Button>
+            </div>
+          </div>
+        )}
         <CardContent>
           {filteredPayments.length === 0 ? (
             <div className="text-center py-12">
@@ -696,12 +790,24 @@ export function PaymentsDashboard() {
                 {filteredPayments.map((payment) => (
                   <div
                     key={payment.id}
-                    className="p-4 rounded-xl border border-border/50 bg-card/50 space-y-3"
+                    className={`p-4 rounded-xl border bg-card/50 space-y-3 transition-colors ${
+                      selectedIds.has(payment.id)
+                        ? "border-primary/40 bg-primary/5"
+                        : "border-border/50"
+                    }`}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <p className="font-medium">{payment.nombre}</p>
-                        <p className="text-xs text-muted-foreground">{formatDate(payment.created_at)}</p>
+                      <div className="flex items-start gap-3">
+                        <Checkbox
+                          checked={selectedIds.has(payment.id)}
+                          onCheckedChange={() => toggleSelect(payment.id)}
+                          disabled={payment.status === "approved"}
+                          className="mt-0.5"
+                        />
+                        <div className="space-y-1">
+                          <p className="font-medium">{payment.nombre}</p>
+                          <p className="text-xs text-muted-foreground">{formatDate(payment.created_at)}</p>
+                        </div>
                       </div>
                       <p className="text-lg font-bold text-primary">{formatCurrency(payment.monto)}</p>
                     </div>
@@ -738,19 +844,28 @@ export function PaymentsDashboard() {
                           WhatsApp
                         </Button>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 text-muted-foreground hover:text-destructive shrink-0"
-                        onClick={() => setPaymentToDelete(payment)}
-                        disabled={deletingId === payment.id}
-                      >
-                        {deletingId === payment.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 text-muted-foreground hover:text-destructive disabled:opacity-30 shrink-0"
+                              onClick={() => setPaymentToDelete(payment)}
+                              disabled={deletingId === payment.id || payment.status === "approved"}
+                            >
+                              {deletingId === payment.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        {payment.status === "approved" && (
+                          <TooltipContent>No se puede eliminar un cobro pagado</TooltipContent>
                         )}
-                      </Button>
+                      </Tooltip>
                     </div>
                   </div>
                 ))}
@@ -761,6 +876,16 @@ export function PaymentsDashboard() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">
+                        <Checkbox
+                          checked={
+                            filteredPayments.filter((p) => p.status !== "approved").length > 0 &&
+                            selectedIds.size === filteredPayments.filter((p) => p.status !== "approved").length
+                          }
+                          onCheckedChange={toggleSelectAll}
+                          aria-label="Seleccionar todos los pendientes"
+                        />
+                      </TableHead>
                       <TableHead>Nombre</TableHead>
                       <TableHead>Estado</TableHead>
                       <TableHead>Telefono</TableHead>
@@ -773,7 +898,26 @@ export function PaymentsDashboard() {
                   </TableHeader>
                   <TableBody>
                     {filteredPayments.map((payment) => (
-                      <TableRow key={payment.id}>
+                      <TableRow
+                        key={payment.id}
+                        className={selectedIds.has(payment.id) ? "bg-primary/5" : ""}
+                      >
+                        <TableCell>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span>
+                                <Checkbox
+                                  checked={selectedIds.has(payment.id)}
+                                  onCheckedChange={() => toggleSelect(payment.id)}
+                                  disabled={payment.status === "approved"}
+                                />
+                              </span>
+                            </TooltipTrigger>
+                            {payment.status === "approved" && (
+                              <TooltipContent>No se puede eliminar un cobro pagado</TooltipContent>
+                            )}
+                          </Tooltip>
+                        </TableCell>
                         <TableCell className="font-medium">{payment.nombre}</TableCell>
                         <TableCell>
                           <StatusBadge status={payment.status} mpPaymentId={payment.mp_payment_id} />
@@ -813,19 +957,28 @@ export function PaymentsDashboard() {
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                              onClick={() => setPaymentToDelete(payment)}
-                              disabled={deletingId === payment.id}
-                            >
-                              {deletingId === payment.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="h-4 w-4" />
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-destructive disabled:opacity-30"
+                                    onClick={() => setPaymentToDelete(payment)}
+                                    disabled={deletingId === payment.id || payment.status === "approved"}
+                                  >
+                                    {deletingId === payment.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </span>
+                              </TooltipTrigger>
+                              {payment.status === "approved" && (
+                                <TooltipContent>No se puede eliminar un cobro pagado</TooltipContent>
                               )}
-                            </Button>
+                            </Tooltip>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -838,5 +991,6 @@ export function PaymentsDashboard() {
         </CardContent>
       </Card>
     </div>
+    </TooltipProvider>
   )
 }

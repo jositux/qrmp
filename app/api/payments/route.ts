@@ -98,15 +98,18 @@ export async function DELETE(request: Request) {
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
+    const ids = searchParams.get("ids") // borrado masivo: ids separados por coma
 
-    if (!id) {
+    if (!id && !ids) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 })
     }
+
+    const idsToDelete = ids ? ids.split(",").filter(Boolean) : [id!]
 
     const { error } = await supabase
       .from("payments")
       .delete()
-      .eq("id", id)
+      .in("id", idsToDelete)
       .eq("user_id", user.id)
 
     if (error) {
@@ -114,7 +117,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, deleted: idsToDelete.length })
   } catch (error) {
     console.error("Error:", error)
     return NextResponse.json({ error: "Error interno" }, { status: 500 })
