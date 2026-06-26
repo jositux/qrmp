@@ -37,20 +37,25 @@ export function usePaymentNotifications() {
           event: "UPDATE",
           schema: "public",
           table: "payments",
-          filter: "status=eq.approved",
         },
         (payload) => {
-          const payment = payload.new as { nombre?: string; monto?: number }
-          const nombre = payment.nombre ?? "Cliente"
-          const monto = payment.monto ?? 0
-          toast.success("Pago recibido", {
-            description: `${nombre} pagó ${formatCurrency(monto)}`,
-            duration: 6000,
-          })
-          increment()
+          const prev = payload.old as { status?: string }
+          const next = payload.new as { status?: string; nombre?: string; monto?: number }
+          // Solo notificar cuando el status cambia a approved
+          if (next.status === "approved" && prev.status !== "approved") {
+            const nombre = next.nombre ?? "Cliente"
+            const monto = next.monto ?? 0
+            toast.success("Pago recibido", {
+              description: `${nombre} pagó ${formatCurrency(monto)}`,
+              duration: 6000,
+            })
+            increment()
+          }
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log("Realtime status:", status)
+      })
 
     return () => {
       supabase.removeChannel(channel)

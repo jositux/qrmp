@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     // Obtener pagos del usuario en el rango de fechas
     const { data: payments, error } = await supabase
       .from("payments")
-      .select("monto, created_at")
+      .select("monto, created_at, status, paid_at")
       .eq("user_id", user.id)
       .gte("created_at", startDate.toISOString())
       .lte("created_at", endDate.toISOString())
@@ -52,6 +52,11 @@ export async function GET(request: NextRequest) {
     // Calcular totales
     const totalMonto = payments?.reduce((sum, p) => sum + Number(p.monto), 0) || 0
     const totalPagos = payments?.length || 0
+
+    // Totales de pagos aprobados
+    const approvedPayments = payments?.filter((p) => p.status === "approved") || []
+    const totalCobrado = approvedPayments.reduce((sum, p) => sum + Number(p.monto), 0)
+    const totalPagados = approvedPayments.length
 
     // Agrupar por dia para el grafico
     const dailyData: Record<string, number> = {}
@@ -86,6 +91,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       totalMonto,
       totalPagos,
+      totalCobrado,
+      totalPagados,
       chartData: accumulatedData,
     })
   } catch (error) {

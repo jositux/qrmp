@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Search, Trash2, Loader2, TrendingUp, QrCode, DollarSign, Eye, Send, Tag, X, Plus, Calendar, Copy, Check, ExternalLink } from "lucide-react"
+import { Search, Trash2, Loader2, TrendingUp, QrCode, DollarSign, Eye, Send, Tag, X, Plus, Calendar, Copy, Check, ExternalLink, CircleCheck, ArrowRight } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { formatCurrency, formatDateAR } from "@/lib/format"
@@ -57,6 +57,8 @@ interface Payment {
 interface Stats {
   totalMonto: number
   totalPagos: number
+  totalCobrado: number
+  totalPagados: number
   chartData: { date: string; monto: number; acumulado: number }[]
 }
 
@@ -357,19 +359,39 @@ export function PaymentsDashboard() {
       </AlertDialog>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4">
         {/* Total Solicitado */}
         <Card className="border-1 bg-transparent shadow-none border-gray-200 dark:border-gray-800 rounded-[20px] overflow-hidden py-0">
           <CardContent className="py-0 px-3 h-16 sm:h-24 flex flex-col justify-center">
             <div className="flex items-center justify-between mb-0.5">
-              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Total</p>
+              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Solicitado</p>
               <DollarSign className="h-3.5 w-3.5 text-primary" />
             </div>
             <div className="text-sm sm:text-2xl font-medium text-foreground truncate leading-none">
               {formatCurrency(stats?.totalMonto || 0)}
             </div>
+            <p className="text-[9px] sm:text-xs text-muted-foreground mt-0.5">{stats?.totalPagos || 0} QRs generados</p>
           </CardContent>
         </Card>
+
+        {/* Cobrado */}
+        <Link href="/panel/pagos-recibidos">
+          <Card className="border-1 bg-transparent shadow-none border-green-200 dark:border-green-900/50 rounded-[20px] overflow-hidden py-0 cursor-pointer hover:border-green-400 dark:hover:border-green-700 transition-colors">
+            <CardContent className="py-0 px-3 h-16 sm:h-24 flex flex-col justify-center">
+              <div className="flex items-center justify-between mb-0.5">
+                <p className="text-[10px] sm:text-sm font-medium text-green-600 dark:text-green-500 uppercase tracking-wider">Cobrado</p>
+                <CircleCheck className="h-3.5 w-3.5 text-green-600 dark:text-green-500" />
+              </div>
+              <div className="text-sm sm:text-2xl font-medium text-green-700 dark:text-green-400 truncate leading-none">
+                {formatCurrency(stats?.totalCobrado || 0)}
+              </div>
+              <div className="flex items-center gap-0.5 mt-0.5">
+                <p className="text-[9px] sm:text-xs text-green-600/70 dark:text-green-500/70">{stats?.totalPagados || 0} pagos aprobados</p>
+                <ArrowRight className="h-2.5 w-2.5 text-green-600/70 dark:text-green-500/70" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
 
         {/* QR Generados */}
         <Card className="border-1 bg-transparent shadow-none border-gray-200 dark:border-gray-800 rounded-[20px] overflow-hidden py-0">
@@ -385,7 +407,7 @@ export function PaymentsDashboard() {
         </Card>
 
         {/* Promedio */}
-        <Card className="border-1 bg-transparent shadow-none border-gray-200 dark:border-gray-800 rounded-[20px] overflow-hidden col-span-2 sm:col-span-1 py-0">
+        <Card className="border-1 bg-transparent shadow-none border-gray-200 dark:border-gray-800 rounded-[20px] overflow-hidden py-0">
           <CardContent className="py-0 px-3 h-16 sm:h-24 flex flex-col justify-center">
             <div className="flex items-center justify-between mb-0.5">
               <p className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Promedio</p>
