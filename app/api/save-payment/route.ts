@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { nombre, telefono, monto, descripcion, payment_url, preference_id, category_id } = body
+    const { nombre, telefono, monto, descripcion, payment_url, preference_id, external_reference, category_id } = body
 
     const { data, error } = await supabase
       .from("payments")
@@ -24,6 +24,7 @@ export async function POST(request: Request) {
         descripcion: descripcion || null,
         payment_url: payment_url || null,
         preference_id: preference_id || null,
+        external_reference: external_reference || null,
         category_id: category_id || null,
       })
       .select()

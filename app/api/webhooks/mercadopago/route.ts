@@ -59,9 +59,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ received: true, duplicate: true }, { status: 200 })
     }
 
-    // Buscar el pago local por preference_id o external_reference
+    // Buscar por external_reference (más confiable) o preference_id como fallback
     let payment = null
-    if (mpPayment.preference_id) {
+    if (mpPayment.external_reference) {
+      const { data } = await supabase
+        .from("payments")
+        .select("id")
+        .eq("external_reference", mpPayment.external_reference)
+        .single()
+      payment = data
+    }
+    if (!payment && mpPayment.preference_id) {
       const { data } = await supabase
         .from("payments")
         .select("id")
@@ -69,16 +77,9 @@ export async function POST(request: NextRequest) {
         .single()
       payment = data
     }
-    if (!payment && mpPayment.external_reference) {
-      const { data } = await supabase
-        .from("payments")
-        .select("id")
-        .eq("preference_id", mpPayment.external_reference)
-        .single()
-      payment = data
-    }
 
     if (!payment) {
+      console.log("Pago no encontrado:", { external_reference: mpPayment.external_reference, preference_id: mpPayment.preference_id })
       return NextResponse.json({ received: true, matched: false }, { status: 200 })
     }
 

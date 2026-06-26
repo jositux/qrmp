@@ -68,6 +68,7 @@ export function PaymentForm() {
             descripcion: title || "Pago",
             payment_url: data.payment_url,
             preference_id: data.preference_id,
+            external_reference: data.external_reference,
             category_id: categoryId,
           }),
         })
