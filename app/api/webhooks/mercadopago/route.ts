@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     if (!mpResponse.ok) {
       console.error("Error al consultar pago en MP:", await mpResponse.text())
-      return NextResponse.json({ error: "MP query failed" }, { status: 502 })
+      return NextResponse.json({ received: true }, { status: 200 })
     }
 
     const mpPayment = await mpResponse.json()
