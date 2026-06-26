@@ -47,10 +47,11 @@ export async function POST(request: NextRequest) {
               title: title || "Pago",
               quantity: 1,
               unit_price: Number(amount),
-              currency_id: "ARS", // Cambia según tu país (BRL, MXN, CLP, etc.)
+              currency_id: "ARS",
             },
           ],
           external_reference: external_reference || `payment-${Date.now()}`,
+          notification_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/mercadopago`,
           payment_methods: {
             excluded_payment_types: [],
             installments: 12,
