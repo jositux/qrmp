@@ -445,63 +445,53 @@ export function PaymentsDashboard() {
       </AlertDialog>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         {/* Total Solicitado */}
-        <Card className="border-1 bg-transparent shadow-none border-gray-200 dark:border-gray-800 rounded-[20px] overflow-hidden py-0">
-          <CardContent className="py-0 px-3 h-16 sm:h-24 flex flex-col justify-center">
-            <div className="flex items-center justify-between mb-0.5">
-              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Solicitado</p>
-              <DollarSign className="h-3.5 w-3.5 text-primary" />
-            </div>
-            <div className="text-sm sm:text-2xl font-medium text-foreground truncate leading-none">
+        <Card className="shadow-sm border border-border/60">
+          <CardContent className="p-4 sm:p-6">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-3">Solicitado</p>
+            <div className="text-2xl sm:text-3xl font-bold text-foreground truncate leading-none">
               {formatCurrency(stats?.totalMonto || 0)}
             </div>
-            <p className="text-[9px] sm:text-xs text-muted-foreground mt-0.5">{stats?.totalPagos || 0} QRs generados</p>
+            <p className="text-xs text-muted-foreground mt-2">{stats?.totalPagos || 0} QRs generados</p>
           </CardContent>
         </Card>
 
         {/* Cobrado */}
         <Link href="/panel/pagos-recibidos">
-          <Card className="border-1 bg-transparent shadow-none border-green-200 dark:border-green-900/50 rounded-[20px] overflow-hidden py-0 cursor-pointer hover:border-green-400 dark:hover:border-green-700 transition-colors">
-            <CardContent className="py-0 px-3 h-16 sm:h-24 flex flex-col justify-center">
-              <div className="flex items-center justify-between mb-0.5">
-                <p className="text-[10px] sm:text-sm font-medium text-green-600 dark:text-green-500 uppercase tracking-wider">Cobrado</p>
-                <CircleCheck className="h-3.5 w-3.5 text-green-600 dark:text-green-500" />
+          <Card className="shadow-sm border border-border/60 cursor-pointer hover:shadow-md transition-shadow group">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Cobrado</p>
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
               </div>
-              <div className="text-sm sm:text-2xl font-medium text-green-700 dark:text-green-400 truncate leading-none">
+              <div className="text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400 truncate leading-none">
                 {formatCurrency(stats?.totalCobrado || 0)}
               </div>
-              <div className="flex items-center gap-0.5 mt-0.5">
-                <p className="text-[9px] sm:text-xs text-green-600/70 dark:text-green-500/70">{stats?.totalPagados || 0} pagos aprobados</p>
-                <ArrowRight className="h-2.5 w-2.5 text-green-600/70 dark:text-green-500/70" />
-              </div>
+              <p className="text-xs text-muted-foreground mt-2">{stats?.totalPagados || 0} pagos aprobados</p>
             </CardContent>
           </Card>
         </Link>
 
         {/* QR Generados */}
-        <Card className="border-1 bg-transparent shadow-none border-gray-200 dark:border-gray-800 rounded-[20px] overflow-hidden py-0">
-          <CardContent className="py-0 px-3 h-16 sm:h-24 flex flex-col justify-center">
-            <div className="flex items-center justify-between mb-0.5">
-              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">QRs</p>
-              <QrCode className="h-3.5 w-3.5 text-primary" />
-            </div>
-            <div className="text-sm sm:text-2xl font-medium text-foreground leading-none">
+        <Card className="shadow-sm border border-border/60">
+          <CardContent className="p-4 sm:p-6">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-3">QRs generados</p>
+            <div className="text-2xl sm:text-3xl font-bold text-foreground leading-none">
               {stats?.totalPagos || 0}
             </div>
+            <p className="text-xs text-muted-foreground mt-2">enlaces creados</p>
           </CardContent>
         </Card>
 
         {/* Promedio */}
-        <Card className="border-1 bg-transparent shadow-none border-gray-200 dark:border-gray-800 rounded-[20px] overflow-hidden py-0">
-          <CardContent className="py-0 px-3 h-16 sm:h-24 flex flex-col justify-center">
-            <div className="flex items-center justify-between mb-0.5">
-              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Promedio</p>
-              <TrendingUp className="h-3.5 w-3.5 text-primary" />
-            </div>
-            <div className="text-sm sm:text-2xl font-medium text-foreground truncate leading-none">
+        <Card className="shadow-sm border border-border/60">
+          <CardContent className="p-4 sm:p-6">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-3">Ticket promedio</p>
+            <div className="text-2xl sm:text-3xl font-bold text-foreground truncate leading-none">
               {formatCurrency(stats?.totalPagos ? stats.totalMonto / stats.totalPagos : 0)}
             </div>
+            <p className="text-xs text-muted-foreground mt-2">por cobro generado</p>
           </CardContent>
         </Card>
       </div>
