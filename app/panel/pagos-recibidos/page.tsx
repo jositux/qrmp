@@ -115,27 +115,23 @@ export default function PagosRecibidosPage() {
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-4">
-        <Card className="border-1 bg-transparent shadow-none border-gray-200 dark:border-gray-800 rounded-[20px] overflow-hidden py-0">
-          <CardContent className="py-0 px-3 h-16 sm:h-24 flex flex-col justify-center">
-            <div className="flex items-center justify-between mb-0.5">
-              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Total cobrado</p>
-              <DollarSign className="h-3.5 w-3.5 text-primary" />
-            </div>
-            <div className="text-sm sm:text-2xl font-medium text-foreground truncate leading-none">
+      <div className="grid grid-cols-2 gap-3">
+        <Card className="shadow-sm border border-border/60">
+          <CardContent className="px-4 py-3 sm:px-5 sm:py-3.5">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1.5">Total cobrado</p>
+            <div className="text-xl sm:text-2xl font-bold text-foreground truncate leading-none">
               {formatCurrency(totalMonto)}
             </div>
+            <p className="text-[11px] text-muted-foreground mt-1.5">en el período seleccionado</p>
           </CardContent>
         </Card>
-        <Card className="border-1 bg-transparent shadow-none border-gray-200 dark:border-gray-800 rounded-[20px] overflow-hidden py-0">
-          <CardContent className="py-0 px-3 h-16 sm:h-24 flex flex-col justify-center">
-            <div className="flex items-center justify-between mb-0.5">
-              <p className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Pagos recibidos</p>
-              <TrendingUp className="h-3.5 w-3.5 text-primary" />
-            </div>
-            <div className="text-sm sm:text-2xl font-medium text-[#080936] dark:text-white leading-none">
+        <Card className="shadow-sm border border-border/60">
+          <CardContent className="px-4 py-3 sm:px-5 sm:py-3.5">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1.5">Pagos recibidos</p>
+            <div className="text-xl sm:text-2xl font-bold text-foreground leading-none">
               {total}
             </div>
+            <p className="text-[11px] text-muted-foreground mt-1.5">pagos aprobados</p>
           </CardContent>
         </Card>
       </div>

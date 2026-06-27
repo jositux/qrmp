@@ -448,39 +448,39 @@ export function PaymentsDashboard() {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {/* Total Solicitado */}
         <Card className="shadow-sm border border-border/60">
-          <CardContent className="p-3 sm:p-4">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-2">Solicitado</p>
-            <div className="text-lg sm:text-xl font-bold text-foreground truncate leading-none">
+          <CardContent className="px-4 py-3 sm:px-5 sm:py-3.5">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1.5">Solicitado</p>
+            <div className="text-xl sm:text-2xl font-bold text-foreground truncate leading-none">
               {formatCurrency(stats?.totalMonto || 0)}
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1.5">{stats?.totalPagos || 0} QRs generados</p>
+            <p className="text-[11px] text-muted-foreground mt-1.5">{stats?.totalPagos || 0} QRs generados</p>
           </CardContent>
         </Card>
 
         {/* Cobrado */}
         <Link href="/panel/pagos-recibidos">
           <Card className="shadow-sm border border-border/60 cursor-pointer hover:shadow-md transition-shadow group h-full">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center justify-between mb-2">
+            <CardContent className="px-4 py-3 sm:px-5 sm:py-3.5">
+              <div className="flex items-center justify-between mb-1.5">
                 <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">Cobrado</p>
                 <ArrowRight className="h-3 w-3 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
               </div>
-              <div className="text-lg sm:text-xl font-bold text-emerald-600 dark:text-emerald-400 truncate leading-none">
+              <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 truncate leading-none">
                 {formatCurrency(stats?.totalCobrado || 0)}
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1.5">{stats?.totalPagados || 0} pagos aprobados</p>
+              <p className="text-[11px] text-muted-foreground mt-1.5">{stats?.totalPagados || 0} pagos aprobados</p>
             </CardContent>
           </Card>
         </Link>
 
         {/* Ticket promedio */}
         <Card className="shadow-sm border border-border/60 col-span-2 sm:col-span-1">
-          <CardContent className="p-3 sm:p-4">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-2">Ticket promedio</p>
-            <div className="text-lg sm:text-xl font-bold text-foreground truncate leading-none">
+          <CardContent className="px-4 py-3 sm:px-5 sm:py-3.5">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1.5">Ticket promedio</p>
+            <div className="text-xl sm:text-2xl font-bold text-foreground truncate leading-none">
               {formatCurrency(stats?.totalPagos ? stats.totalMonto / stats.totalPagos : 0)}
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1.5">por cobro generado</p>
+            <p className="text-[11px] text-muted-foreground mt-1.5">por cobro generado</p>
           </CardContent>
         </Card>
       </div>
