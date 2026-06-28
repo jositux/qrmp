@@ -15,13 +15,14 @@ export async function GET(request: Request) {
     const search = searchParams.get("q") || ""
     const from = searchParams.get("from") || ""
     const to = searchParams.get("to") || ""
+    const categoryId = searchParams.get("category_id") || ""
     const page = Math.max(1, Number(searchParams.get("page") || "1"))
     const limit = Math.min(100, Math.max(1, Number(searchParams.get("limit") || "20")))
     const offset = (page - 1) * limit
 
     let query = supabase
       .from("payments")
-      .select("id, nombre, monto, descripcion, paid_at, payment_method, mp_payment_id", { count: "exact" })
+      .select("id, nombre, monto, descripcion, paid_at, payment_method, mp_payment_id, category_id, category:categories(id, nombre, color)", { count: "exact" })
       .eq("user_id", user.id)
       .eq("status", "approved")
       .order("paid_at", { ascending: false })
@@ -35,8 +36,11 @@ export async function GET(request: Request) {
     }
 
     if (to) {
-      // Incluir todo el día "to"
       query = query.lte("paid_at", `${to}T23:59:59.999Z`)
+    }
+
+    if (categoryId) {
+      query = query.eq("category_id", categoryId)
     }
 
     const { data, error, count } = await query.range(offset, offset + limit - 1)

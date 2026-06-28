@@ -33,22 +33,5 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Redirigir /dashboard a /panel
-  if (request.nextUrl.pathname.startsWith('/dashboard')) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/panel'
-    return NextResponse.redirect(url)
-  }
-
-  // Proteger rutas que requieren autenticacion
-  if (
-    request.nextUrl.pathname.startsWith('/panel') &&
-    !user
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/auth/login'
-    return NextResponse.redirect(url)
-  }
-
-  return supabaseResponse
+  return { response: supabaseResponse, user }
 }
