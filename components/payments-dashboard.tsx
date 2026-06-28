@@ -31,7 +31,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Search, Trash2, Loader2, TrendingUp, QrCode, DollarSign, Eye, Send, Tag, X, Plus, Calendar, Copy, Check, ExternalLink, CircleCheck, ArrowRight } from "lucide-react"
+import { Search, Trash2, Loader2, TrendingUp, QrCode, DollarSign, Eye, Send, Tag, X, Plus, Calendar, Copy, Check, ExternalLink, CircleCheck, ArrowRight, ChevronDown } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -80,6 +81,128 @@ function StatusBadge({ status, mpPaymentId }: { status: string | null; mpPayment
       <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 dark:bg-yellow-400" />
       Pendiente
     </span>
+  )
+}
+
+const CATEGORY_COLORS = ["#ef4444","#f59e0b","#22c55e","#06b6d4","#6366f1","#ec4899"]
+
+function CategoryPopover({ payment, categories, updatingCategoryId, onUpdate, onCategoryCreated }: {
+  payment: Payment
+  categories: Category[]
+  updatingCategoryId: string | null
+  onUpdate: (paymentId: string, categoryId: string | null) => void
+  onCategoryCreated: (cat: Category) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [newName, setNewName] = useState("")
+  const [newColor, setNewColor] = useState("#6366f1")
+  const [creating, setCreating] = useState(false)
+  const [showNew, setShowNew] = useState(false)
+
+  const handleCreate = async () => {
+    if (!newName.trim()) return
+    setCreating(true)
+    try {
+      const res = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre: newName.trim(), color: newColor }),
+      })
+      const data = await res.json()
+      if (res.ok && data.category) {
+        onCategoryCreated(data.category)
+        onUpdate(payment.id, data.category.id)
+        setNewName("")
+        setShowNew(false)
+        setOpen(false)
+      }
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-muted hover:bg-muted/70 transition-colors group">
+          {payment.category ? (
+            <>
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: payment.category.color }} />
+              <span>{payment.category.nombre}</span>
+            </>
+          ) : (
+            <span className="text-muted-foreground">Sin categoría</span>
+          )}
+          {updatingCategoryId === payment.id
+            ? <Loader2 className="h-3 w-3 animate-spin ml-0.5" />
+            : <ChevronDown className="h-3 w-3 ml-0.5 opacity-0 group-hover:opacity-50 transition-opacity" />
+          }
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-52 p-1" align="start">
+        <button
+          onClick={() => { onUpdate(payment.id, null); setOpen(false) }}
+          className="w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-muted transition-colors text-muted-foreground"
+        >
+          Sin categoría
+          {!payment.category_id && <Check className="h-3 w-3 ml-auto" />}
+        </button>
+        {categories.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => { onUpdate(payment.id, cat.id); setOpen(false) }}
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-muted transition-colors"
+          >
+            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+            <span className="truncate flex-1 text-left">{cat.nombre}</span>
+            {payment.category_id === cat.id && <Check className="h-3 w-3 shrink-0" />}
+          </button>
+        ))}
+        <div className="border-t border-border mt-1 pt-1">
+          {!showNew ? (
+            <button
+              onClick={() => setShowNew(true)}
+              className="w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-muted transition-colors text-primary"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Nueva categoría
+            </button>
+          ) : (
+            <div className="px-2 py-1.5 space-y-2">
+              <input
+                autoFocus
+                placeholder="Nombre..."
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                maxLength={30}
+                onKeyDown={(e) => { if (e.key === "Enter") handleCreate(); if (e.key === "Escape") setShowNew(false) }}
+                className="w-full text-sm bg-muted rounded px-2 py-1 outline-none focus:ring-1 focus:ring-primary"
+              />
+              <div className="flex gap-1.5">
+                {CATEGORY_COLORS.map((c) => (
+                  <button key={c} type="button" onClick={() => setNewColor(c)}
+                    className={`w-5 h-5 rounded-full transition-all hover:scale-110 ${newColor === c ? "ring-2 ring-offset-1 ring-primary scale-110" : ""}`}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+              <div className="flex gap-1">
+                <button onClick={handleCreate} disabled={!newName.trim() || creating}
+                  className="flex-1 text-xs bg-primary text-primary-foreground rounded px-2 py-1 disabled:opacity-50"
+                >
+                  {creating ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : "Crear"}
+                </button>
+                <button onClick={() => { setShowNew(false); setNewName("") }}
+                  className="text-xs px-2 py-1 rounded hover:bg-muted"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
 
@@ -908,17 +1031,13 @@ export function PaymentsDashboard() {
                           {formatCurrency(payment.monto)}
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
-                          {payment.category ? (
-                            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-muted">
-                              <span
-                                className="w-2 h-2 rounded-full"
-                                style={{ backgroundColor: payment.category.color }}
-                              />
-                              {payment.category.nombre}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
+                          <CategoryPopover
+                            payment={payment}
+                            categories={categories}
+                            updatingCategoryId={updatingCategoryId}
+                            onUpdate={updatePaymentCategory}
+                            onCategoryCreated={(cat) => setCategories((prev) => [...prev, cat].sort((a, b) => a.nombre.localeCompare(b.nombre)))}
+                          />
                         </TableCell>
                         <TableCell className="text-muted-foreground max-w-[200px] truncate">
                           {payment.descripcion || "-"}
