@@ -63,23 +63,18 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 })
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("payments")
       .update({ category_id: category_id || null })
       .eq("id", id)
       .eq("user_id", user.id)
-      .select(`
-        *,
-        category:categories(id, nombre, color)
-      `)
-      .single()
 
     if (error) {
       console.error("Error updating payment:", error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ payment: data })
+    return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Error:", error)
     return NextResponse.json({ error: "Error interno" }, { status: 500 })
