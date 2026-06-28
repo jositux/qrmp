@@ -67,7 +67,7 @@ export async function PATCH(request: Request) {
 
     const { error, count } = await supabase
       .from("payments")
-      .update({ category_id: category_id ?? null })
+      .update({ category_id: category_id ?? null }, { count: "exact" })
       .eq("id", id)
 
     console.log("[PATCH payments] error:", error, "count:", count)
