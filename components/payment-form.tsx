@@ -51,11 +51,29 @@ export function PaymentForm() {
     }
   }
 
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let v = e.target.value
+    // Reemplazar punto por coma (algunos teclados móviles usan punto)
+    v = v.replace(".", ",")
+    // Solo dígitos y una coma
+    v = v.replace(/[^\d,]/g, "")
+    // Solo una coma
+    const parts = v.split(",")
+    if (parts.length > 2) v = parts[0] + "," + parts.slice(1).join("")
+    // Máx 8 dígitos enteros
+    if (parts[0].length > 8) return
+    // Máx 2 decimales
+    if (parts[1] !== undefined && parts[1].length > 2) return
+    setAmount(v)
+  }
+
+  const amountAsNumber = () => Number(amount.replace(",", "."))
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const montoNum = Number(amount)
-    if (montoNum <= 0) { setError("El monto debe ser mayor a 0"); return }
+    const montoNum = amountAsNumber()
+    if (!amount || montoNum <= 0) { setError("El monto debe ser mayor a 0"); return }
     if (montoNum > MONTO_MAX) { setError(`El monto no puede superar ${MONTO_MAX.toLocaleString("es-AR")}`); return }
     if (clientName.length > NOMBRE_MAX) { setError(`El nombre no puede superar ${NOMBRE_MAX} caracteres`); return }
     if (title.length > DESC_MAX) { setError(`La descripción no puede superar ${DESC_MAX} caracteres`); return }
@@ -72,7 +90,7 @@ export function PaymentForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: Number(amount),
+          amount: amountAsNumber(),
           title: title || "Pago",
         }),
       })
@@ -93,7 +111,7 @@ export function PaymentForm() {
           body: JSON.stringify({
             nombre: clientName || "Sin nombre",
             telefono: clientPhone || null,
-            monto: Number(amount),
+            monto: amountAsNumber(),
             descripcion: title || "Pago",
             payment_url: data.payment_url,
             preference_id: data.preference_id,
@@ -129,7 +147,7 @@ export function PaymentForm() {
   }
 
   const getShareMessage = () => {
-    const formattedAmount = formatCurrency(Number(amount))
+    const formattedAmount = formatCurrency(amountAsNumber())
 
     const lines = [
       clientName ? `Hola ${clientName}!` : "Hola!",
@@ -218,21 +236,11 @@ export function PaymentForm() {
                 <Label htmlFor="amount" className="text-base font-medium">Monto a cobrar <span className="text-muted-foreground font-normal text-sm">ARS</span></Label>
                 <Input
                   id="amount"
-                  type="number"
-                  placeholder="0.00"
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0,00"
                   value={amount}
-                  onChange={(e) => {
-                    const v = e.target.value
-                    if (v === "") { setAmount(""); return }
-                    const num = Number(v)
-                    if (num < 0) return
-                    if (Math.floor(Math.abs(num)).toString().length > 8) return
-                    setAmount(v)
-                  }}
-                  onKeyDown={(e) => { if (e.key === "-") e.preventDefault() }}
-                  min="1"
-                  max={MONTO_MAX}
-                  step="0.01"
+                  onChange={handleAmountChange}
                   required
                   className="h-14 text-2xl font-semibold text-center placeholder:text-muted-foreground/60 placeholder:font-normal md:h-20 md:text-3xl md:py-8 lg:h-24 lg:text-3xl transition-all duration-200 focus-visible:ring-offset-2"
                 />
