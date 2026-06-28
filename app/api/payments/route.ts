@@ -69,7 +69,6 @@ export async function PATCH(request: Request) {
       .from("payments")
       .update({ category_id: category_id ?? null })
       .eq("id", id)
-      .eq("user_id", user.id)
 
     console.log("[PATCH payments] error:", error, "count:", count)
 
