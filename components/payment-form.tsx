@@ -221,7 +221,11 @@ export function PaymentForm() {
                   type="number"
                   placeholder="0.00"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    if (v === "" || Number(v) >= 0) setAmount(v)
+                  }}
+                  onKeyDown={(e) => { if (e.key === "-") e.preventDefault() }}
                   min="1"
                   max={MONTO_MAX}
                   step="0.01"
