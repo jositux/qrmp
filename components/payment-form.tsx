@@ -223,7 +223,11 @@ export function PaymentForm() {
                   value={amount}
                   onChange={(e) => {
                     const v = e.target.value
-                    if (v === "" || Number(v) >= 0) setAmount(v)
+                    if (v === "") { setAmount(""); return }
+                    const num = Number(v)
+                    if (num < 0) return
+                    if (Math.floor(Math.abs(num)).toString().length > 8) return
+                    setAmount(v)
                   }}
                   onKeyDown={(e) => { if (e.key === "-") e.preventDefault() }}
                   min="1"
