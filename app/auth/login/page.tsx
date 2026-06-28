@@ -36,10 +36,10 @@ export default function LoginPage() {
         password,
       })
       if (error) throw error
-      router.push('/dashboard')
+      router.push('/panel')
+      // No reseteamos isLoading — el loader queda hasta que la navegación completa
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Ocurrio un error')
-    } finally {
       setIsLoading(false)
     }
   }
