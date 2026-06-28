@@ -297,9 +297,11 @@ export function PaymentsDashboard() {
         body: JSON.stringify({ id: paymentId, category_id: categoryId }),
       })
       if (res.ok) {
-        const data = await res.json()
+        const cat = categoryId ? categories.find((c) => c.id === categoryId) ?? null : null
         setAllPayments((prev) =>
-          prev.map((p) => (p.id === paymentId ? data.payment : p))
+          prev.map((p) =>
+            p.id === paymentId ? { ...p, category_id: categoryId, category: cat } : p
+          )
         )
       }
     } catch (error) {
