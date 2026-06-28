@@ -75,7 +75,7 @@ export function BulkPaymentForm() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const MONTO_MAX = 999999
+  const MONTO_MAX = 99999999
   const NOMBRE_MAX = 30
   const DESC_MAX = 100
 

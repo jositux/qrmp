@@ -33,7 +33,7 @@ export function PaymentForm() {
 
   const NOMBRE_MAX = 30
   const DESC_MAX = 100
-  const MONTO_MAX = 999999
+  const MONTO_MAX = 99999999
 
   const validatePhone = (phone: string): boolean => {
     if (!phone) return true
