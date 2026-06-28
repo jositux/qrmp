@@ -296,6 +296,8 @@ export function PaymentsDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: paymentId, category_id: categoryId }),
       })
+      const data = await res.json()
+      console.log("[PATCH /api/payments]", res.status, data)
       if (res.ok) {
         const cat = categoryId ? categories.find((c) => c.id === categoryId) ?? null : null
         setAllPayments((prev) =>
