@@ -191,7 +191,7 @@ export function CategorySelector({ value, onChange, onCategoriesChange }: Catego
                       className="w-3 h-3 rounded-full mr-2 shrink-0"
                       style={{ backgroundColor: category.color }}
                     />
-                    <span className="flex-1">{category.nombre}</span>
+                    <span className="flex-1 truncate max-w-[160px]">{category.nombre}</span>
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
@@ -241,12 +241,20 @@ export function CategorySelector({ value, onChange, onCategoriesChange }: Catego
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="category-name">Nombre</Label>
+              <Label htmlFor="category-name" className="flex items-center justify-between">
+                Nombre
+                {newCategoryName.length > 20 && (
+                  <span className={`text-xs font-normal ${newCategoryName.length >= 30 ? "text-destructive" : "text-muted-foreground"}`}>
+                    {newCategoryName.length}/30
+                  </span>
+                )}
+              </Label>
               <Input
                 id="category-name"
                 placeholder="Ej: Envios, Productos, Servicios..."
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
+                maxLength={30}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault()

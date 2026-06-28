@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       .order("paid_at", { ascending: false })
 
     if (search) {
-      query = query.ilike("nombre", `%${search}%`)
+      query = query.or(`nombre.ilike.%${search}%,mp_payment_id.ilike.%${search}%`)
     }
 
     if (from) {

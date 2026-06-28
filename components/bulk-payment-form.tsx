@@ -43,9 +43,10 @@ interface ClientRow {
   telefono: string
   monto: number
   descripcion: string
-  status: "pending" | "generating" | "ready" | "error"
+  status: "pending" | "generating" | "ready" | "error" | "invalid"
   paymentUrl?: string
   error?: string
+  validationError?: string
 }
 
 const ITEMS_PER_PAGE = 20
@@ -74,15 +75,50 @@ export function BulkPaymentForm() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const MONTO_MAX = 999999
+
   const normalizeText = (text: string): string => {
-    // Decodificar caracteres mal codificados y normalizar
     try {
-      // Intentar decodificar si hay caracteres mal formados
       const decoded = decodeURIComponent(escape(text))
-      return decoded
+      return decoded.trim()
     } catch {
-      return text
+      return text.trim()
     }
+  }
+
+  const parseAmount = (raw: string): number => {
+    const cleaned = String(raw).trim().replace(/[^\d.,]/g, "")
+    if (!cleaned) return 0
+    // Both . and , present → . is thousands separator, , is decimal (AR format: "1.500,00")
+    if (cleaned.includes(".") && cleaned.includes(",")) {
+      return Number(cleaned.replace(/\./g, "").replace(",", "."))
+    }
+    // Only comma present
+    if (cleaned.includes(",")) {
+      const parts = cleaned.split(",")
+      // If decimal part has ≤2 digits → comma is decimal separator
+      if (parts.length === 2 && parts[1].length <= 2) {
+        return Number(cleaned.replace(",", "."))
+      }
+      return Number(cleaned.replace(/,/g, ""))
+    }
+    // Only dot present
+    if (cleaned.includes(".")) {
+      const parts = cleaned.split(".")
+      // Dot as thousands separator: single dot with exactly 3 digits after (e.g., "1.500")
+      if (parts.length === 2 && parts[1].length === 3 && parts[0].length <= 3) {
+        return Number(cleaned.replace(".", ""))
+      }
+      return Number(cleaned)
+    }
+    return Number(cleaned)
+  }
+
+  const validateRow = (nombre: string, monto: number): string | null => {
+    if (!nombre) return "Nombre vacío"
+    if (monto <= 0) return "Monto debe ser mayor a 0"
+    if (monto > MONTO_MAX) return `Monto supera el máximo (${MONTO_MAX.toLocaleString("es-AR")})`
+    return null
   }
 
   const processFile = (file: File) => {
@@ -91,31 +127,35 @@ export function BulkPaymentForm() {
     reader.onload = (event) => {
       try {
         const data = event.target?.result
-        // Usar type: "array" con ArrayBuffer para mejor soporte de codificacion UTF-8
         const workbook = XLSX.read(data, { type: "array", codepage: 65001 })
         const sheetName = workbook.SheetNames[0]
         const worksheet = workbook.Sheets[sheetName]
-        // raw: false para que XLSX maneje la conversion de tipos
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false, defval: "" }) as Record<string, unknown>[]
 
-        const parsedClients: ClientRow[] = jsonData.map((row, index) => ({
-          id: `client-${index}`,
-          nombre: normalizeText(String(row.nombre || row.Nombre || row.NOMBRE || row.name || row.Name || "")),
-          telefono: String(row.telefono || row.Telefono || row.TELEFONO || row.phone || row.Phone || row.whatsapp || row.WhatsApp || "").replace(/[^\d+]/g, ""),
-          monto: Number(String(row.monto || row.Monto || row.MONTO || row.amount || row.Amount || 0).replace(/[^\d.,]/g, "").replace(",", ".")) || 0,
-          descripcion: normalizeText(String(row.descripcion || row.Descripcion || row.DESCRIPCION || row.description || row.Description || "Pago")),
-          status: "pending",
-        }))
+        const parsedClients: ClientRow[] = jsonData.map((row, index) => {
+          const nombre = normalizeText(String(row.nombre || row.Nombre || row.NOMBRE || row.name || row.Name || "")).slice(0, 200)
+          const monto = parseAmount(String(row.monto || row.Monto || row.MONTO || row.amount || row.Amount || "0"))
+          const descripcion = normalizeText(String(row.descripcion || row.Descripcion || row.DESCRIPCION || row.description || row.Description || "Pago")).slice(0, 200)
+          const telefono = String(row.telefono || row.Telefono || row.TELEFONO || row.phone || row.Phone || row.whatsapp || row.WhatsApp || "").replace(/[^\d+]/g, "")
+          const validationError = validateRow(nombre, monto)
+          return {
+            id: `client-${index}`,
+            nombre,
+            telefono,
+            monto,
+            descripcion,
+            status: validationError ? "invalid" : "pending",
+            validationError: validationError ?? undefined,
+          }
+        })
 
-        const validClients = parsedClients.filter((c) => c.monto > 0)
-        setClients(validClients)
+        setClients(parsedClients)
         setCurrentPage(1)
       } catch (err) {
         console.error("Error procesando archivo:", err)
         alert("Error al leer el archivo. Verifica que sea un Excel o CSV valido.")
       }
     }
-    // Usar readAsArrayBuffer para mejor manejo de codificacion
     reader.readAsArrayBuffer(file)
   }
 
@@ -314,10 +354,11 @@ export function BulkPaymentForm() {
 
   const readyCount = clients.filter((c) => c.status === "ready").length
   const errorCount = clients.filter((c) => c.status === "error").length
+  const invalidCount = clients.filter((c) => c.status === "invalid").length
   const pendingCount = clients.filter((c) => c.status === "pending" || c.status === "error").length
 
-  const getStatusBadge = (status: ClientRow["status"]) => {
-    switch (status) {
+  const getStatusBadge = (client: ClientRow) => {
+    switch (client.status) {
       case "pending":
         return <span className="text-xs text-muted-foreground">Pendiente</span>
       case "generating":
@@ -326,6 +367,12 @@ export function BulkPaymentForm() {
         return <span className="px-1.5 py-0.5 text-xs rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">Listo</span>
       case "error":
         return <span className="px-1.5 py-0.5 text-xs rounded bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">Error</span>
+      case "invalid":
+        return (
+          <span className="px-1.5 py-0.5 text-xs rounded bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400" title={client.validationError}>
+            Inválido
+          </span>
+        )
     }
   }
 
@@ -439,6 +486,9 @@ export function BulkPaymentForm() {
                 {errorCount > 0 && (
                   <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs">{errorCount} errores</span>
                 )}
+                {invalidCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs">{invalidCount} inválidos</span>
+                )}
                 <Button variant="ghost" size="sm" onClick={clearAll} className="text-muted-foreground hover:text-destructive h-8">
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -465,14 +515,21 @@ export function BulkPaymentForm() {
                       <TableCell className="text-right font-medium py-2">
                         {formatCurrency(client.monto)}
                       </TableCell>
-                      <TableCell className="py-2">{getStatusBadge(client.status)}</TableCell>
+                      <TableCell className="py-2">
+                        <div className="flex flex-col gap-0.5">
+                          {getStatusBadge(client)}
+                          {client.validationError && (
+                            <span className="text-[10px] text-orange-600 dark:text-orange-400">{client.validationError}</span>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell className="py-2">
                         <div className="flex justify-end gap-1">
                           {client.status === "pending" && (
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              onClick={() => generateSinglePayment(client.id)} 
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => generateSinglePayment(client.id)}
                               disabled={generatingId === client.id || loading}
                               className="h-7 text-xs"
                             >
@@ -480,10 +537,10 @@ export function BulkPaymentForm() {
                             </Button>
                           )}
                           {client.status === "error" && (
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              onClick={() => generateSinglePayment(client.id)} 
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => generateSinglePayment(client.id)}
                               disabled={generatingId === client.id || loading}
                               className="h-7 text-xs text-amber-600 border-amber-300 hover:bg-amber-50"
                             >
@@ -519,7 +576,7 @@ export function BulkPaymentForm() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="font-medium text-sm truncate">{client.nombre || "Sin nombre"}</p>
-                        {getStatusBadge(client.status)}
+                        {getStatusBadge(client)}
                       </div>
                       <p className="text-xs text-muted-foreground font-mono">{client.telefono}</p>
                     </div>

@@ -29,9 +29,38 @@ export function PaymentForm() {
   const [paymentData, setPaymentData] = useState<PaymentResponse | null>(null)
   const [qrLoaded, setQrLoaded] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [phoneError, setPhoneError] = useState("")
+
+  const NOMBRE_MAX = 200
+  const DESC_MAX = 200
+  const MONTO_MAX = 999999
+
+  const validatePhone = (phone: string): boolean => {
+    if (!phone) return true
+    const digits = phone.replace(/\D/g, "")
+    return digits.length >= 7 && digits.length <= 15
+  }
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^\d+\-\s()]/g, "")
+    setClientPhone(value)
+    if (value && !validatePhone(value)) {
+      setPhoneError("Ingresá entre 7 y 15 dígitos (ej: 5491155551234)")
+    } else {
+      setPhoneError("")
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    const montoNum = Number(amount)
+    if (montoNum <= 0) { setError("El monto debe ser mayor a 0"); return }
+    if (montoNum > MONTO_MAX) { setError(`El monto no puede superar ${MONTO_MAX.toLocaleString("es-AR")}`); return }
+    if (clientName.length > NOMBRE_MAX) { setError(`El nombre no puede superar ${NOMBRE_MAX} caracteres`); return }
+    if (title.length > DESC_MAX) { setError(`La descripción no puede superar ${DESC_MAX} caracteres`); return }
+    if (clientPhone && !validatePhone(clientPhone)) { setError("El número de WhatsApp no es válido"); return }
+
     setLoading(true)
     setError("")
     setPaymentData(null)
@@ -151,13 +180,21 @@ export function PaymentForm() {
               {/* Nombre y WhatsApp — primero identificamos al cliente */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="clientName" className="text-sm font-medium">Nombre del cliente</Label>
+                  <Label htmlFor="clientName" className="text-sm font-medium flex items-center justify-between">
+                    Nombre del cliente
+                    {clientName.length > 180 && (
+                      <span className={`text-xs font-normal ${clientName.length >= NOMBRE_MAX ? "text-destructive" : "text-muted-foreground"}`}>
+                        {clientName.length}/{NOMBRE_MAX}
+                      </span>
+                    )}
+                  </Label>
                   <Input
                     id="clientName"
                     type="text"
                     placeholder="Juan Perez"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
+                    maxLength={NOMBRE_MAX}
                     className="h-11 placeholder:text-muted-foreground/60"
                     autoFocus
                   />
@@ -169,9 +206,10 @@ export function PaymentForm() {
                     type="tel"
                     placeholder="5491155551234"
                     value={clientPhone}
-                    onChange={(e) => setClientPhone(e.target.value)}
-                    className="h-11 placeholder:text-muted-foreground/60"
+                    onChange={handlePhoneChange}
+                    className={`h-11 placeholder:text-muted-foreground/60 ${phoneError ? "border-destructive" : ""}`}
                   />
+                  {phoneError && <p className="text-xs text-destructive">{phoneError}</p>}
                 </div>
               </div>
 
@@ -185,6 +223,7 @@ export function PaymentForm() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   min="1"
+                  max={MONTO_MAX}
                   step="0.01"
                   required
                   className="h-14 text-2xl font-semibold text-center placeholder:text-muted-foreground/60 placeholder:font-normal md:h-20 md:text-3xl md:py-8 lg:h-24 lg:text-3xl transition-all duration-200 focus-visible:ring-offset-2"
@@ -194,13 +233,21 @@ export function PaymentForm() {
               {/* Descripcion y Categoria */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title" className="text-sm font-medium">Descripción <span className="text-muted-foreground font-normal">(opcional)</span></Label>
+                  <Label htmlFor="title" className="text-sm font-medium flex items-center justify-between">
+                    <span>Descripción <span className="text-muted-foreground font-normal">(opcional)</span></span>
+                    {title.length > 180 && (
+                      <span className={`text-xs font-normal ${title.length >= DESC_MAX ? "text-destructive" : "text-muted-foreground"}`}>
+                        {title.length}/{DESC_MAX}
+                      </span>
+                    )}
+                  </Label>
                   <Input
                     id="title"
                     type="text"
                     placeholder="Servicio o producto"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
+                    maxLength={DESC_MAX}
                     className="h-11 placeholder:text-muted-foreground/60"
                   />
                 </div>
