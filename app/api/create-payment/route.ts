@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           items: [
             {
-              title: (title || "Pago").slice(0, 200),
+              title: (title || "Pago").slice(0, 100),
               quantity: 1,
               unit_price: Number(amount),
               currency_id: "ARS",

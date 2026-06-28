@@ -76,6 +76,8 @@ export function BulkPaymentForm() {
   }
 
   const MONTO_MAX = 999999
+  const NOMBRE_MAX = 30
+  const DESC_MAX = 100
 
   const normalizeText = (text: string): string => {
     try {
@@ -133,9 +135,9 @@ export function BulkPaymentForm() {
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false, defval: "" }) as Record<string, unknown>[]
 
         const parsedClients: ClientRow[] = jsonData.map((row, index) => {
-          const nombre = normalizeText(String(row.nombre || row.Nombre || row.NOMBRE || row.name || row.Name || "")).slice(0, 200)
+          const nombre = normalizeText(String(row.nombre || row.Nombre || row.NOMBRE || row.name || row.Name || "")).slice(0, NOMBRE_MAX)
           const monto = parseAmount(String(row.monto || row.Monto || row.MONTO || row.amount || row.Amount || "0"))
-          const descripcion = normalizeText(String(row.descripcion || row.Descripcion || row.DESCRIPCION || row.description || row.Description || "Pago")).slice(0, 200)
+          const descripcion = normalizeText(String(row.descripcion || row.Descripcion || row.DESCRIPCION || row.description || row.Description || "Pago")).slice(0, DESC_MAX)
           const telefono = String(row.telefono || row.Telefono || row.TELEFONO || row.phone || row.Phone || row.whatsapp || row.WhatsApp || "").replace(/[^\d+]/g, "")
           const validationError = validateRow(nombre, monto)
           return {

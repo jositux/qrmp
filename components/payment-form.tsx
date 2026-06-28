@@ -31,8 +31,8 @@ export function PaymentForm() {
   const [copied, setCopied] = useState(false)
   const [phoneError, setPhoneError] = useState("")
 
-  const NOMBRE_MAX = 200
-  const DESC_MAX = 200
+  const NOMBRE_MAX = 30
+  const DESC_MAX = 100
   const MONTO_MAX = 999999
 
   const validatePhone = (phone: string): boolean => {
