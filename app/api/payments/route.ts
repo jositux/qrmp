@@ -59,22 +59,26 @@ export async function PATCH(request: Request) {
     const body = await request.json()
     const { id, category_id } = body
 
+    console.log("[PATCH payments] id:", id, "category_id:", category_id, "user:", user.id)
+
     if (!id) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 })
     }
 
-    const { error } = await supabase
+    const { error, count } = await supabase
       .from("payments")
-      .update({ category_id: category_id || null })
+      .update({ category_id: category_id ?? null })
       .eq("id", id)
       .eq("user_id", user.id)
+
+    console.log("[PATCH payments] error:", error, "count:", count)
 
     if (error) {
       console.error("Error updating payment:", error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, count })
   } catch (error) {
     console.error("Error:", error)
     return NextResponse.json({ error: "Error interno" }, { status: 500 })
