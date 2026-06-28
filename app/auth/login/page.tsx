@@ -46,7 +46,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-muted/30">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm animate-fade-in-up">
         <div className="flex flex-col gap-6">
           <div className="text-center">
             <Link href="/" className="inline-block mb-4">

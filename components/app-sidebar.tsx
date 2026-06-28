@@ -42,7 +42,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
     setIsLoggingOut(true)
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push("/")
+    router.push("/auth/login")
   }
 
   return (

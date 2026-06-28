@@ -1,5 +1,7 @@
 "use client"
 
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-provider"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -23,7 +25,8 @@ import {
 } from "lucide-react"
 
 export default function Home() {
-
+  const router = useRouter()
+  useEffect(() => { router.replace("/auth/login") }, [router])
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
