@@ -17,7 +17,6 @@ export default function ConfiguracionPage() {
   const [mounted, setMounted] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
@@ -64,7 +63,6 @@ export default function ConfiguracionPage() {
       if (error) throw error
 
       setMessage({ type: "success", text: "Contrasena actualizada correctamente" })
-      setCurrentPassword("")
       setNewPassword("")
       setConfirmPassword("")
     } catch (error: unknown) {
@@ -171,15 +169,6 @@ export default function ConfiguracionPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleUpdatePassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="current-password">Contrasena actual</Label>
-                <Input
-                  id="current-password"
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                />
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="new-password">Nueva contrasena</Label>
                 <Input
