@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import {
   BarChart3,
@@ -10,15 +10,24 @@ import {
   Puzzle,
   LogOut,
   Loader2,
-  Home,
   CircleCheck,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-provider"
 import { NotificationBell } from "@/components/notification-bell"
+import { useGeneration } from "@/contexts/generation-context"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import type { User } from "@supabase/supabase-js"
 
 interface AppSidebarProps {
@@ -37,6 +46,8 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [pendingHref, setPendingHref] = useState<string | null>(null)
+  const { isGenerating } = useGeneration()
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -45,8 +56,34 @@ export function AppSidebar({ user }: AppSidebarProps) {
     router.push("/auth/login")
   }
 
+  const handleNavClick = (href: string) => {
+    if (isGenerating) {
+      setPendingHref(href)
+    } else {
+      router.push(href)
+    }
+  }
+
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar md:flex">
+    <>
+      <AlertDialog open={!!pendingHref} onOpenChange={(open) => { if (!open) setPendingHref(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Salir de la generación?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Hay una generación en curso. Si salís ahora se detiene, pero los pagos ya generados quedan guardados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Quedarme</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { router.push(pendingHref!); setPendingHref(null) }}>
+              Salir igual
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar md:flex">
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-6">
         <Link href="/" className="flex items-center gap-2">
@@ -60,14 +97,14 @@ export function AppSidebar({ user }: AppSidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-3 py-4">
         {navigation.map((item) => {
-          const isActive = pathname === item.href || 
+          const isActive = pathname === item.href ||
             (item.href !== "/panel" && pathname.startsWith(item.href))
           return (
-            <Link
+            <button
               key={item.name}
-              href={item.href}
+              onClick={() => handleNavClick(item.href)}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
@@ -75,7 +112,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
             >
               <item.icon className="h-5 w-5" />
               {item.name}
-            </Link>
+            </button>
           )
         })}
       </nav>
@@ -114,5 +151,6 @@ export function AppSidebar({ user }: AppSidebarProps) {
         </div>
       </div>
     </aside>
+    </>
   )
 }

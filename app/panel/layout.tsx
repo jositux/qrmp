@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { AppSidebar } from "@/components/app-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
+import { PanelProvider } from "@/components/panel-provider"
 
 export default async function PanelLayout({
   children,
@@ -16,14 +17,16 @@ export default async function PanelLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppSidebar user={data.user} />
-      <main className="pb-16 md:pb-0 md:pl-64">
-        <div className="mx-auto max-w-7xl p-4 md:p-6 lg:p-8 animate-fade-in">
-          {children}
-        </div>
-      </main>
-      <MobileNav />
-    </div>
+    <PanelProvider>
+      <div className="min-h-screen bg-background">
+        <AppSidebar user={data.user} />
+        <main className="pb-16 md:pb-0 md:pl-64">
+          <div className="mx-auto max-w-7xl p-4 md:p-6 lg:p-8 animate-fade-in">
+            {children}
+          </div>
+        </main>
+        <MobileNav />
+      </div>
+    </PanelProvider>
   )
 }

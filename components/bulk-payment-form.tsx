@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -36,6 +36,7 @@ import { Input } from "@/components/ui/input"
 import * as XLSX from "xlsx"
 import { formatCurrency } from "@/lib/format"
 import { CategorySelector } from "@/components/category-selector"
+import { useGeneration } from "@/contexts/generation-context"
 
 interface ClientRow {
   id: string
@@ -190,6 +191,18 @@ export function BulkPaymentForm() {
   }
 
   const [generatingId, setGeneratingId] = useState<string | null>(null)
+  const shouldStopRef = useRef(false)
+  const { setIsGenerating } = useGeneration()
+
+  useEffect(() => {
+    if (!loading) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ""
+    }
+    window.addEventListener("beforeunload", handler)
+    return () => window.removeEventListener("beforeunload", handler)
+  }, [loading])
 
   const savePaymentToDB = async (client: ClientRow, paymentUrl: string, preferenceId: string, externalReference: string): Promise<string | undefined> => {
     try {
@@ -253,9 +266,12 @@ export function BulkPaymentForm() {
   }
 
   const generateAllPayments = async () => {
+    shouldStopRef.current = false
     setLoading(true)
+    setIsGenerating(true)
 
     for (let i = 0; i < clients.length; i++) {
+      if (shouldStopRef.current) break
       const client = clients[i]
       if (client.status === "ready" || client.status === "invalid") continue
 
@@ -295,6 +311,8 @@ export function BulkPaymentForm() {
 
     setLoading(false)
     setCurrentIndex(null)
+    setIsGenerating(false)
+    shouldStopRef.current = false
   }
 
   const getShareMessage = (client: ClientRow) => {
@@ -677,24 +695,36 @@ export function BulkPaymentForm() {
     />
   </div>
 
-  {/* Action Button */}
-  <Button
-  onClick={generateAllPayments}
-  disabled={loading || pendingCount === 0}
-  className="w-full"
-  size="lg"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generando {currentIndex !== null ? `(${currentIndex + 1}/${clients.length})` : ""}...
-                </>
-              ) : pendingCount > 0 ? (
-                `Generar ${pendingCount} pagos`
-              ) : (
-                <><Check className="mr-2 h-4 w-4" /> Todos los pagos generados</>
-              )}
-            </Button>
+  {/* Action Buttons */}
+  <div className="flex gap-2">
+    <Button
+      onClick={generateAllPayments}
+      disabled={loading || pendingCount === 0}
+      className="flex-1"
+      size="lg"
+    >
+      {loading ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Generando {currentIndex !== null ? `(${currentIndex + 1}/${clients.length})` : ""}...
+        </>
+      ) : pendingCount > 0 ? (
+        `Generar ${pendingCount} pagos`
+      ) : (
+        <><Check className="mr-2 h-4 w-4" /> Todos los pagos generados</>
+      )}
+    </Button>
+    {loading && (
+      <Button
+        size="lg"
+        variant="outline"
+        onClick={() => { shouldStopRef.current = true }}
+        className="border-destructive text-destructive hover:bg-destructive/10"
+      >
+        Detener
+      </Button>
+    )}
+  </div>
           </>
         )}
 

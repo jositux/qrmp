@@ -1,10 +1,21 @@
 "use client"
 
-import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { BarChart3, QrCode, Settings, Puzzle, Bell } from "lucide-react"
 import { usePaymentNotifications } from "@/hooks/use-payment-notifications"
+import { useGeneration } from "@/contexts/generation-context"
+import { useState } from "react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 const navigation = [
   { name: "Dashboard", href: "/panel", icon: BarChart3 },
@@ -17,22 +28,50 @@ export function MobileNav() {
   const pathname = usePathname()
   const router = useRouter()
   const { unreadCount, clearCount } = usePaymentNotifications()
+  const { isGenerating } = useGeneration()
+  const [pendingHref, setPendingHref] = useState<string | null>(null)
+
+  const handleNavClick = (href: string) => {
+    if (isGenerating) {
+      setPendingHref(href)
+    } else {
+      router.push(href)
+    }
+  }
 
   const handleBellClick = () => {
     clearCount()
-    router.push("/panel/pagos-recibidos")
+    handleNavClick("/panel/pagos-recibidos")
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background md:hidden">
+    <>
+      <AlertDialog open={!!pendingHref} onOpenChange={(open) => { if (!open) setPendingHref(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Salir de la generación?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Hay una generación en curso. Si salís ahora se detiene, pero los pagos ya generados quedan guardados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Quedarme</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { router.push(pendingHref!); setPendingHref(null) }}>
+              Salir igual
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background md:hidden">
       <div className="flex items-center justify-around">
         {navigation.map((item) => {
           const isActive = pathname === item.href ||
             (item.href !== "/panel" && pathname.startsWith(item.href))
           return (
-            <Link
+            <button
               key={item.name}
-              href={item.href}
+              onClick={() => handleNavClick(item.href)}
               className={cn(
                 "flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors",
                 isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
@@ -40,7 +79,7 @@ export function MobileNav() {
             >
               <item.icon className="h-5 w-5" />
               {item.name}
-            </Link>
+            </button>
           )
         })}
         <button
@@ -62,5 +101,6 @@ export function MobileNav() {
         </button>
       </div>
     </nav>
+    </>
   )
 }
