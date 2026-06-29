@@ -135,7 +135,7 @@ function CategoryPopover({ payment, categories, updatingCategoryId, onUpdate, on
           )}
           {updatingCategoryId === payment.id
             ? <Loader2 className="h-3 w-3 animate-spin ml-0.5" />
-            : <ChevronDown className="h-3 w-3 ml-0.5 opacity-0 group-hover:opacity-50 transition-opacity" />
+            : <ChevronDown className="h-3 w-3 ml-0.5 opacity-50" />
           }
         </button>
       </PopoverTrigger>
