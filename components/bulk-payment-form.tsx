@@ -512,11 +512,13 @@ export function BulkPaymentForm() {
                 </TableHeader>
                 <TableBody>
                   {paginatedClients.map((client) => (
-                    <TableRow key={client.id} className="group">
-                      <TableCell className="font-medium py-2">{client.nombre || "-"}</TableCell>
+                    <TableRow key={client.id} className={`group ${client.status === "invalid" ? "bg-orange-50/60 dark:bg-orange-950/20" : ""}`}>
+                      <TableCell className="font-medium py-2">
+                        {client.nombre || <span className="text-orange-500 italic text-xs">Sin nombre</span>}
+                      </TableCell>
                       <TableCell className="text-muted-foreground font-mono text-xs py-2">{client.telefono}</TableCell>
                       <TableCell className="text-right font-medium py-2">
-                        {formatCurrency(client.monto)}
+                        {client.monto > 0 ? formatCurrency(client.monto) : <span className="text-orange-500 text-xs">—</span>}
                       </TableCell>
                       <TableCell className="py-2">
                         <div className="flex flex-col gap-0.5">
@@ -574,17 +576,20 @@ export function BulkPaymentForm() {
             {/* Mobile Cards */}
             <div className="sm:hidden space-y-2">
               {paginatedClients.map((client) => (
-                <div key={client.id} className="p-3 border border-border rounded-xl bg-card">
+                <div key={client.id} className={`p-3 border rounded-xl ${client.status === "invalid" ? "border-orange-200 bg-orange-50/60 dark:border-orange-900/40 dark:bg-orange-950/20" : "border-border bg-card"}`}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="font-medium text-sm truncate">{client.nombre || "Sin nombre"}</p>
+                        <p className="font-medium text-sm truncate">{client.nombre || <span className="text-orange-500 italic">Sin nombre</span>}</p>
                         {getStatusBadge(client)}
                       </div>
                       <p className="text-xs text-muted-foreground font-mono">{client.telefono}</p>
+                      {client.validationError && (
+                        <p className="text-[10px] text-orange-600 dark:text-orange-400 mt-0.5">{client.validationError}</p>
+                      )}
                     </div>
                     <p className="font-semibold text-sm whitespace-nowrap">
-                      {formatCurrency(client.monto)}
+                      {client.monto > 0 ? formatCurrency(client.monto) : <span className="text-orange-500">—</span>}
                     </p>
                   </div>
                   <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/50">
