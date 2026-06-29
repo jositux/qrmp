@@ -278,15 +278,17 @@ export function PaymentsDashboard() {
   }, [fetchPayments, fetchStats])
 
   // Filtrar pagos localmente para la tabla
-  const filteredPayments = allPayments.filter((payment) => {
-    const matchesSearch = payment.nombre.toLowerCase().includes(search.toLowerCase())
-    const matchesCategory = !selectedCategoryId || payment.category_id === selectedCategoryId
-    const matchesStatus =
-      !selectedStatus ||
-      (selectedStatus === "approved" && payment.status === "approved") ||
-      (selectedStatus === "pending" && payment.status !== "approved")
-    return matchesSearch && matchesCategory && matchesStatus
-  })
+  const filteredPayments = allPayments
+    .filter((payment) => {
+      const matchesSearch = payment.nombre.toLowerCase().includes(search.toLowerCase())
+      const matchesCategory = !selectedCategoryId || payment.category_id === selectedCategoryId
+      const matchesStatus =
+        !selectedStatus ||
+        (selectedStatus === "approved" && payment.status === "approved") ||
+        (selectedStatus === "pending" && payment.status !== "approved")
+      return matchesSearch && matchesCategory && matchesStatus
+    })
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   const updatePaymentCategory = async (paymentId: string, categoryId: string | null) => {
     setUpdatingCategoryId(paymentId)
@@ -995,7 +997,6 @@ export function PaymentsDashboard() {
                       <TableHead>Telefono</TableHead>
                       <TableHead className="text-right">Monto</TableHead>
                       <TableHead className="hidden lg:table-cell">Categoria</TableHead>
-                      <TableHead>Descripcion</TableHead>
                       <TableHead>Fecha</TableHead>
                       <TableHead className="w-[80px]"></TableHead>
                     </TableRow>
@@ -1040,9 +1041,6 @@ export function PaymentsDashboard() {
                             onUpdate={updatePaymentCategory}
                             onCategoryCreated={(cat) => setCategories((prev) => [...prev, cat].sort((a, b) => a.nombre.localeCompare(b.nombre)))}
                           />
-                        </TableCell>
-                        <TableCell className="text-muted-foreground max-w-[200px] truncate">
-                          {payment.descripcion || "-"}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {formatDate(payment.created_at)}

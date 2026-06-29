@@ -91,6 +91,11 @@ export default function ConfiguracionPage() {
 
   const handleCreateCategory = async () => {
     if (!newCatName.trim()) return
+    const nameLower = newCatName.trim().toLowerCase()
+    if (categories.some((c) => c.nombre.toLowerCase() === nameLower)) {
+      setCatError("Ya existe una categoría con ese nombre")
+      return
+    }
     setCreatingCat(true)
     setCatError(null)
     try {

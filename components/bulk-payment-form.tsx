@@ -215,6 +215,13 @@ export function BulkPaymentForm() {
     return () => window.removeEventListener("beforeunload", handler)
   }, [loading])
 
+  useEffect(() => {
+    return () => {
+      shouldStopRef.current = true
+      setIsGenerating(false)
+    }
+  }, [setIsGenerating])
+
   const savePaymentToDB = async (client: ClientRow, paymentUrl: string, preferenceId: string, externalReference: string): Promise<string | undefined> => {
     try {
       const res = await fetch("/api/save-payment", {
