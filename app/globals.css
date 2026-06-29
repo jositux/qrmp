@@ -125,6 +125,12 @@
   body {
     @apply bg-background text-foreground;
   }
+  button, [role="button"], a, label[for], select, [type="checkbox"], [type="radio"] {
+    cursor: pointer;
+  }
+  button:disabled, [role="button"][aria-disabled="true"] {
+    cursor: not-allowed;
+  }
 }
 
 /* Fade animations */
