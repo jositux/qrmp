@@ -32,6 +32,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import * as XLSX from "xlsx"
 import { formatCurrency } from "@/lib/format"
@@ -191,6 +201,7 @@ export function BulkPaymentForm() {
   }
 
   const [generatingId, setGeneratingId] = useState<string | null>(null)
+  const [showClearDialog, setShowClearDialog] = useState(false)
   const shouldStopRef = useRef(false)
   const { setIsGenerating } = useGeneration()
 
@@ -348,6 +359,7 @@ export function BulkPaymentForm() {
   }
 
   const clearAll = () => {
+    shouldStopRef.current = true
     const dbIds = clients.filter((c) => c.dbId).map((c) => c.dbId!)
     if (dbIds.length > 0) {
       fetch(`/api/payments?ids=${dbIds.join(",")}`, { method: "DELETE" })
@@ -356,6 +368,8 @@ export function BulkPaymentForm() {
     setClients([])
     setFileName(null)
     setCurrentPage(1)
+    setLoading(false)
+    setIsGenerating(false)
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
@@ -510,7 +524,7 @@ export function BulkPaymentForm() {
                 {invalidCount > 0 && (
                   <span className="px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs">{invalidCount} inválidos</span>
                 )}
-                <Button variant="ghost" size="sm" onClick={clearAll} className="text-muted-foreground hover:text-destructive h-8">
+                <Button variant="ghost" size="sm" onClick={() => setShowClearDialog(true)} className="text-muted-foreground hover:text-destructive h-8">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -727,6 +741,34 @@ export function BulkPaymentForm() {
   </div>
           </>
         )}
+
+        {/* Clear confirmation dialog */}
+        <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {loading ? "¿Detener y cargar nuevo archivo?" : "¿Limpiar el listado?"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {loading
+                  ? "Se detiene la generación en curso. Los pagos ya generados quedan guardados en el historial. Podés cargar un nuevo archivo."
+                  : readyCount > 0
+                    ? `Se eliminan ${readyCount} pago${readyCount !== 1 ? "s" : ""} generado${readyCount !== 1 ? "s" : ""} del historial. Esta acción no se puede deshacer.`
+                    : "Se limpia el listado. Podés cargar un nuevo archivo."
+                }
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => { clearAll(); setShowClearDialog(false) }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {loading ? "Detener y limpiar" : "Limpiar"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Preview Dialog */}
         <Dialog open={!!previewClient} onOpenChange={() => setPreviewClient(null)}>
