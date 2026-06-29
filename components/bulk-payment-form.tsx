@@ -45,6 +45,7 @@ interface ClientRow {
   descripcion: string
   status: "pending" | "generating" | "ready" | "error" | "invalid"
   paymentUrl?: string
+  dbId?: string
   error?: string
   validationError?: string
 }
@@ -190,12 +191,32 @@ export function BulkPaymentForm() {
 
   const [generatingId, setGeneratingId] = useState<string | null>(null)
 
-  const generateSinglePayment = async (clientId: string) => {
-    const clientIndex = clients.findIndex(c => c.id === clientId)
-    if (clientIndex === -1) return
+  const savePaymentToDB = async (client: ClientRow, paymentUrl: string, preferenceId: string, externalReference: string): Promise<string | undefined> => {
+    try {
+      const res = await fetch("/api/save-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre: client.nombre,
+          telefono: client.telefono || null,
+          monto: client.monto,
+          descripcion: client.descripcion,
+          payment_url: paymentUrl,
+          preference_id: preferenceId,
+          external_reference: externalReference,
+          category_id: categoryId,
+        }),
+      })
+      const data = await res.json()
+      return data.payment?.id
+    } catch (e) {
+      console.error("Error saving payment:", e)
+    }
+  }
 
-    const client = clients[clientIndex]
-    if (client.status === "ready") return
+  const generateSinglePayment = async (clientId: string) => {
+    const client = clients.find(c => c.id === clientId)
+    if (!client || client.status === "ready") return
 
     setGeneratingId(clientId)
     setClients((prev) =>
@@ -206,43 +227,18 @@ export function BulkPaymentForm() {
       const response = await fetch("/api/create-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: client.monto,
-          title: client.descripcion,
-        }),
+        body: JSON.stringify({ amount: client.monto, title: client.descripcion }),
       })
-
       const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "Error al generar pago")
 
-      if (!response.ok) {
-        throw new Error(data.error || "Error al generar pago")
-      }
+      const dbId = await savePaymentToDB(client, data.payment_url, data.preference_id, data.external_reference)
 
       setClients((prev) =>
         prev.map((c) =>
-          c.id === clientId ? { ...c, status: "ready", paymentUrl: data.payment_url } : c
+          c.id === clientId ? { ...c, status: "ready", paymentUrl: data.payment_url, dbId } : c
         )
       )
-
-      // Guardar en base de datos
-      try {
-        await fetch("/api/save-payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nombre: client.nombre,
-            telefono: client.telefono || null,
-            monto: client.monto,
-            descripcion: client.descripcion,
-            payment_url: data.payment_url,
-            preference_id: data.preference_id,
-            external_reference: data.external_reference,
-            category_id: categoryId,
-          }),
-        })
-      } catch (saveError) {
-        console.error("Error saving payment:", saveError)
-      }
     } catch (err) {
       setClients((prev) =>
         prev.map((c) =>
@@ -261,7 +257,7 @@ export function BulkPaymentForm() {
 
     for (let i = 0; i < clients.length; i++) {
       const client = clients[i]
-      if (client.status === "ready") continue
+      if (client.status === "ready" || client.status === "invalid") continue
 
       setCurrentIndex(i)
       setClients((prev) =>
@@ -272,21 +268,16 @@ export function BulkPaymentForm() {
         const response = await fetch("/api/create-payment", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            amount: client.monto,
-            title: client.descripcion,
-          }),
+          body: JSON.stringify({ amount: client.monto, title: client.descripcion }),
         })
-
         const data = await response.json()
+        if (!response.ok) throw new Error(data.error || "Error al generar pago")
 
-        if (!response.ok) {
-          throw new Error(data.error || "Error al generar pago")
-        }
+        const dbId = await savePaymentToDB(client, data.payment_url, data.preference_id, data.external_reference)
 
         setClients((prev) =>
           prev.map((c, idx) =>
-            idx === i ? { ...c, status: "ready", paymentUrl: data.payment_url } : c
+            idx === i ? { ...c, status: "ready", paymentUrl: data.payment_url, dbId } : c
           )
         )
       } catch (err) {
@@ -299,7 +290,7 @@ export function BulkPaymentForm() {
         )
       }
 
-      await new Promise((r) => setTimeout(r, 500))
+      await new Promise((r) => setTimeout(r, 300))
     }
 
     setLoading(false)
@@ -330,10 +321,20 @@ export function BulkPaymentForm() {
   }
 
   const removeClient = (id: string) => {
+    const client = clients.find((c) => c.id === id)
+    if (client?.dbId) {
+      fetch(`/api/payments?id=${client.dbId}`, { method: "DELETE" })
+        .catch((e) => console.error("Error deleting payment:", e))
+    }
     setClients((prev) => prev.filter((c) => c.id !== id))
   }
 
   const clearAll = () => {
+    const dbIds = clients.filter((c) => c.dbId).map((c) => c.dbId!)
+    if (dbIds.length > 0) {
+      fetch(`/api/payments?ids=${dbIds.join(",")}`, { method: "DELETE" })
+        .catch((e) => console.error("Error deleting payments:", e))
+    }
     setClients([])
     setFileName(null)
     setCurrentPage(1)
