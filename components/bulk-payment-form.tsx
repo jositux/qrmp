@@ -732,7 +732,7 @@ export function BulkPaymentForm() {
       <Button
         size="lg"
         variant="outline"
-        onClick={() => { shouldStopRef.current = true }}
+        onClick={() => setShowClearDialog(true)}
         className="border-destructive text-destructive hover:bg-destructive/10"
       >
         Detener
