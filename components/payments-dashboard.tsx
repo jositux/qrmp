@@ -84,6 +84,25 @@ function StatusBadge({ status, mpPaymentId }: { status: string | null; mpPayment
   )
 }
 
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button onClick={handleCopy} className="ml-0.5 p-0.5 rounded hover:bg-muted transition-colors">
+          {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="top">{copied ? "Copiado" : "Copiar"}</TooltipContent>
+    </Tooltip>
+  )
+}
+
 const CATEGORY_COLORS = ["#ef4444","#f59e0b","#22c55e","#06b6d4","#6366f1","#ec4899"]
 
 function CategoryPopover({ payment, categories, updatingCategoryId, onUpdate, onCategoryCreated }: {
@@ -1039,13 +1058,7 @@ export function PaymentsDashboard() {
                           {payment.mp_payment_id ? (
                             <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">
                               {payment.mp_payment_id}
-                              <button
-                                onClick={() => navigator.clipboard.writeText(payment.mp_payment_id!)}
-                                className="ml-0.5 p-0.5 rounded hover:bg-muted transition-colors"
-                                title="Copiar ID"
-                              >
-                                <Copy className="h-3 w-3" />
-                              </button>
+                              <CopyButton text={payment.mp_payment_id} />
                             </span>
                           ) : (
                             <span className="text-muted-foreground">-</span>

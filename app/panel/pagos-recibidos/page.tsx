@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Search, Loader2, CircleCheck, Plus, X, Check, ChevronDown } from "lucide-react"
+import { Search, Loader2, CircleCheck, Plus, X, Check, ChevronDown, Copy, Eye } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { formatCurrency, formatDateAR } from "@/lib/format"
 
 interface Category {
@@ -67,6 +69,25 @@ function formatDateTime(dateStr: string) {
     hour: "2-digit",
     minute: "2-digit",
   })
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button onClick={handleCopy} className="ml-0.5 p-0.5 rounded hover:bg-muted transition-colors">
+          {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="top">{copied ? "Copiado" : "Copiar"}</TooltipContent>
+    </Tooltip>
+  )
 }
 
 const CATEGORY_COLORS = ["#ef4444","#f59e0b","#22c55e","#06b6d4","#6366f1","#ec4899"]
@@ -208,6 +229,7 @@ export default function PagosRecibidosPage() {
   const [search, setSearch] = useState("")
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
   const [updatingCategoryId, setUpdatingCategoryId] = useState<string | null>(null)
+  const [selectedPayment, setSelectedPayment] = useState<ReceivedPayment | null>(null)
   const [dateFrom, setDateFrom] = useState<string>(() => {
     const d = new Date()
     d.setDate(d.getDate() - 30)
@@ -289,6 +311,62 @@ export default function PagosRecibidosPage() {
   const totalMonto = payments.reduce((sum, p) => sum + p.monto, 0)
 
   return (
+    <TooltipProvider delayDuration={300}>
+    <>
+    {/* Detail Dialog */}
+    <Dialog open={!!selectedPayment} onOpenChange={(open) => { if (!open) setSelectedPayment(null) }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Detalles del pago</DialogTitle>
+          <DialogDescription>
+            {selectedPayment && formatDateTime(selectedPayment.paid_at)}
+          </DialogDescription>
+        </DialogHeader>
+        {selectedPayment && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-xl">
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Cliente</p>
+                <p className="font-medium">{selectedPayment.nombre}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Monto</p>
+                <p className="font-bold text-green-600 dark:text-green-400 text-lg">{formatCurrency(selectedPayment.monto)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Método de pago</p>
+                <PaymentMethodBadge method={selectedPayment.payment_method} />
+              </div>
+              {selectedPayment.category && (
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Categoría</p>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-background">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: selectedPayment.category.color }} />
+                    {selectedPayment.category.nombre}
+                  </span>
+                </div>
+              )}
+              {selectedPayment.descripcion && (
+                <div className="col-span-2">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Descripción</p>
+                  <p className="text-sm">{selectedPayment.descripcion}</p>
+                </div>
+              )}
+              {selectedPayment.mp_payment_id && (
+                <div className="col-span-2">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">ID MercadoPago</p>
+                  <span className="inline-flex items-center gap-1 font-mono text-sm">
+                    {selectedPayment.mp_payment_id}
+                    <CopyButton text={selectedPayment.mp_payment_id} />
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
@@ -441,9 +519,22 @@ export default function PagosRecibidosPage() {
                         onUpdate={updatePaymentCategory}
                         onCategoryCreated={handleCategoryCreated}
                       />
-                      {payment.mp_payment_id && (
-                        <p className="text-[10px] text-muted-foreground/60 font-mono">MP# {payment.mp_payment_id}</p>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {payment.mp_payment_id && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground/60 font-mono">
+                            MP# {payment.mp_payment_id}
+                            <CopyButton text={payment.mp_payment_id} />
+                          </span>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => setSelectedPayment(payment)}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -461,6 +552,7 @@ export default function PagosRecibidosPage() {
                       <TableHead>Categoría</TableHead>
                       <TableHead>Descripción</TableHead>
                       <TableHead className="text-muted-foreground">ID MP</TableHead>
+                      <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -488,8 +580,25 @@ export default function PagosRecibidosPage() {
                         <TableCell className="text-muted-foreground max-w-[200px] truncate">
                           {payment.descripcion || "-"}
                         </TableCell>
-                        <TableCell className="font-mono text-xs text-muted-foreground/60">
-                          {payment.mp_payment_id || "-"}
+                        <TableCell>
+                          {payment.mp_payment_id ? (
+                            <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">
+                              {payment.mp_payment_id}
+                              <CopyButton text={payment.mp_payment_id} />
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setSelectedPayment(payment)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -528,5 +637,7 @@ export default function PagosRecibidosPage() {
         </CardContent>
       </Card>
     </div>
+    </>
+    </TooltipProvider>
   )
 }
