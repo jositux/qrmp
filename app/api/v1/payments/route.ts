@@ -18,7 +18,7 @@ const bodySchema = z.object({
   external_reference: z.string().trim().max(100).optional(),
 })
 
-const RATE_LIMIT_PER_MINUTE = 30
+const RATE_LIMIT_PER_MINUTE = 100
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders })
