@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -30,6 +30,13 @@ export function PaymentForm() {
   const [qrLoaded, setQrLoaded] = useState(false)
   const [copied, setCopied] = useState(false)
   const [phoneError, setPhoneError] = useState("")
+  const clientNameRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (window.matchMedia("(min-width: 768px)").matches) {
+      clientNameRef.current?.focus()
+    }
+  }, [])
 
   const NOMBRE_MAX = 30
   const DESC_MAX = 100
@@ -208,13 +215,13 @@ export function PaymentForm() {
                   </Label>
                   <Input
                     id="clientName"
+                    ref={clientNameRef}
                     type="text"
                     placeholder="Juan Perez"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                     maxLength={NOMBRE_MAX}
                     className="h-11 placeholder:text-muted-foreground/60"
-                    autoFocus
                   />
                 </div>
                 <div className="space-y-2">

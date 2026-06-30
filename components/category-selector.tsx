@@ -253,19 +253,29 @@ export function CategorySelector({ value, onChange, onCategoriesChange }: Catego
                   </span>
                 )}
               </Label>
-              <Input
-                id="category-name"
-                placeholder="Ej: Envios, Productos, Servicios..."
-                value={newCategoryName}
-                onChange={(e) => { setNewCategoryName(e.target.value); setCreateError(null) }}
-                maxLength={30}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault()
-                    handleCreate()
-                  }
-                }}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="category-name"
+                  placeholder="Ej: Envios, Productos, Servicios..."
+                  value={newCategoryName}
+                  onChange={(e) => { setNewCategoryName(e.target.value); setCreateError(null) }}
+                  maxLength={30}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      handleCreate()
+                    }
+                  }}
+                />
+                <Button
+                  size="icon"
+                  onClick={handleCreate}
+                  disabled={isCreating || !newCategoryName.trim()}
+                  className="shrink-0 sm:hidden"
+                >
+                  {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                </Button>
+              </div>
               {createError && (
                 <p className="text-xs text-destructive">{createError}</p>
               )}
@@ -287,7 +297,7 @@ export function CategorySelector({ value, onChange, onCategoriesChange }: Catego
                 ))}
               </div>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+            <div className="hidden sm:flex items-center gap-2 p-3 bg-muted rounded-lg">
               <span
                 className="w-4 h-4 rounded-full shrink-0"
                 style={{ backgroundColor: newCategoryColor }}
@@ -297,7 +307,7 @@ export function CategorySelector({ value, onChange, onCategoriesChange }: Catego
               </span>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="hidden sm:flex">
             <Button variant="outline" onClick={() => { setShowNewDialog(false); setCreateError(null) }}>
               Cancelar
             </Button>

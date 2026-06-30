@@ -238,6 +238,8 @@ export function PaymentsDashboard() {
   const [categories, setCategories] = useState<Category[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [search, setSearch] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const [listFading, setListFading] = useState(false)
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [dateFrom, setDateFrom] = useState<string>(() => {
@@ -304,10 +306,19 @@ export function PaymentsDashboard() {
     loadData()
   }, [fetchPayments, fetchStats])
 
+  useEffect(() => {
+    setListFading(true)
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+      setListFading(false)
+    }, 200)
+    return () => clearTimeout(timer)
+  }, [search])
+
   // Filtrar pagos localmente para la tabla
   const filteredPayments = allPayments
     .filter((payment) => {
-      const matchesSearch = payment.nombre.toLowerCase().includes(search.toLowerCase())
+      const matchesSearch = payment.nombre.toLowerCase().includes(debouncedSearch.toLowerCase())
       const matchesCategory = !selectedCategoryId || payment.category_id === selectedCategoryId
       const matchesStatus =
         !selectedStatus ||
@@ -934,7 +945,7 @@ export function PaymentsDashboard() {
               )}
             </div>
           ) : (
-            <>
+            <div className={`transition-opacity duration-200 ${listFading ? "opacity-0" : "opacity-100"}`}>
               {/* Mobile Cards */}
               <div className="md:hidden space-y-3">
                 {filteredPayments.map((payment) => (
@@ -1140,7 +1151,7 @@ export function PaymentsDashboard() {
                   </TableBody>
                 </Table>
               </div>
-            </>
+            </div>
           )}
         </CardContent>
       </Card>
