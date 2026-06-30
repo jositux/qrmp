@@ -430,7 +430,7 @@ export default function PagosRecibidosPage() {
                     placeholder="Buscar por nombre o ID MP..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9"
+                    className="pl-9 placeholder:text-xs sm:placeholder:text-sm"
                   />
                 </div>
                 <Button variant="outline" size="sm" onClick={exportToExcel} disabled={payments.length === 0} className="shrink-0">
