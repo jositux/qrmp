@@ -798,7 +798,7 @@ export function PaymentsDashboard() {
                     placeholder="Buscar por nombre..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9"
+                    className="pl-9 text-sm placeholder:text-xs sm:placeholder:text-sm"
                   />
                 </div>
                 <Button variant="outline" size="sm" onClick={exportToExcel} disabled={filteredPayments.length === 0} className="shrink-0">
