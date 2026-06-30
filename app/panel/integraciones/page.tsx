@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Copy, Eye, EyeOff, RefreshCw, Key, Webhook, Code, Loader2, Trash2 } from "lucide-react"
+import { Copy, Check, Eye, EyeOff, RefreshCw, Key, Webhook, Code, Loader2, Trash2 } from "lucide-react"
 
 interface ApiKey {
   id: string
@@ -111,65 +111,73 @@ export default function IntegracionesPage() {
               <p className="text-sm text-muted-foreground py-2">
                 Todavía no generaste una API key. Crea una para empezar a integrar tu sistema.
               </p>
-            ) : (
-              <div className="space-y-2">
-                <Label>Clave de API</Label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
+            ) : newKeyValue ? (
+              <div className="space-y-3">
+                <div className="rounded-lg border border-amber-400 bg-amber-50 dark:bg-amber-950/30 p-4 space-y-3">
+                  <div className="flex items-start gap-2">
+                    <span className="text-amber-600 dark:text-amber-400 text-sm font-medium leading-snug">
+                      ⚠️ Guardá esta clave ahora. No se va a volver a mostrar.
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
                     <Input
                       type="text"
-                      value={newKeyValue ? (showApiKey ? newKeyValue : maskedKey) : maskedKey}
+                      value={showApiKey ? newKeyValue : maskedKey}
                       readOnly
-                      className="pr-10 font-mono text-sm"
+                      className="font-mono text-sm bg-white dark:bg-zinc-900"
                     />
-                    {newKeyValue && (
-                      <button
-                        type="button"
-                        onClick={() => setShowApiKey(!showApiKey)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showApiKey ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                      </button>
-                    )}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => copyToClipboard(newKeyValue ?? maskedKey)}
-                    disabled={!newKeyValue}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  {activeKey && (
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => revokeKey(activeKey.id)}
-                      disabled={revokingId === activeKey.id}
+                      onClick={() => setShowApiKey(!showApiKey)}
+                      className="shrink-0"
                     >
-                      {revokingId === activeKey.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                      {showApiKey ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                     </Button>
+                    <Button
+                      size="icon"
+                      onClick={() => copyToClipboard(newKeyValue)}
+                      className="shrink-0"
+                    >
+                      {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  {copied && (
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400">Copiado al portapapeles</p>
                   )}
                 </div>
-                {copied && (
-                  <p className="text-sm text-emerald-600 dark:text-emerald-400">
-                    Copiado al portapapeles
-                  </p>
-                )}
-                {newKeyValue && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400">
-                    Guardá esta clave ahora, no se va a volver a mostrar completa.
-                  </p>
-                )}
+                <Button variant="outline" onClick={regenerateKey} disabled={isCreating} className="w-full">
+                  {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                  Regenerar clave
+                </Button>
+                <p className="text-xs text-muted-foreground">Regenerar invalida la clave anterior de inmediato.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label>Clave de API</Label>
+                  <div className="flex gap-2">
+                    <Input value={maskedKey} readOnly className="font-mono text-sm" />
+                    {activeKey && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => revokeKey(activeKey.id)}
+                        disabled={revokingId === activeKey.id}
+                      >
+                        {revokingId === activeKey.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Si perdiste tu clave, regenerá una nueva.</p>
+                </div>
+                <Button variant="outline" onClick={regenerateKey} disabled={isCreating} className="w-full">
+                  {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                  Regenerar clave
+                </Button>
+                <p className="text-xs text-muted-foreground">Regenerar invalida la clave anterior de inmediato.</p>
               </div>
             )}
-            <Button variant="outline" onClick={regenerateKey} disabled={isCreating} className="w-full">
-              {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-              {activeKey ? "Regenerar clave" : "Generar clave"}
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              {activeKey ? "Regenerar invalida la clave anterior de inmediato." : "Manten tu API key segura. No la compartas publicamente."}
-            </p>
           </CardContent>
         </Card>
 
