@@ -635,7 +635,7 @@ export function PaymentsDashboard() {
         </Card>
 
         {/* Tasa de conversión */}
-        <Card className="shadow-sm border border-border/60 col-span-2 sm:col-span-1">
+        <Card className="shadow-sm border border-border/60">
           <CardContent className="px-4 py-3 sm:px-5 sm:py-3.5">
             <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1.5">Conversión</p>
             <div className="text-xl sm:text-2xl font-bold text-foreground truncate leading-none">
