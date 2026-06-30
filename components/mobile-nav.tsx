@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { BarChart3, QrCode, Settings, Puzzle, Bell } from "lucide-react"
+import { BarChart3, QrCode, Settings, Bell } from "lucide-react"
 import { usePaymentNotifications } from "@/hooks/use-payment-notifications"
 import { useGeneration } from "@/contexts/generation-context"
 import { useState } from "react"
@@ -21,7 +21,6 @@ const navigation = [
   { name: "Dashboard", href: "/panel", icon: BarChart3 },
   { name: "Cobros", href: "/panel/cobros", icon: QrCode },
   { name: "Config", href: "/panel/configuracion", icon: Settings },
-  { name: "API", href: "/panel/integraciones", icon: Puzzle },
 ]
 
 export function MobileNav() {
