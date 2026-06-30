@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Search, Loader2, CircleCheck, Plus, X, Check, ChevronDown, Copy, Eye } from "lucide-react"
+import { Search, Loader2, CircleCheck, Plus, X, Check, ChevronDown, Copy, Eye, Download } from "lucide-react"
+import * as XLSX from "xlsx"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { formatCurrency, formatDateAR } from "@/lib/format"
@@ -310,6 +311,22 @@ export default function PagosRecibidosPage() {
   const totalPages = Math.ceil(total / PAGE_SIZE)
   const totalMonto = payments.reduce((sum, p) => sum + p.monto, 0)
 
+  const exportToExcel = () => {
+    const rows = payments.map((p) => ({
+      Nombre: p.nombre,
+      Monto: p.monto,
+      "Fecha de pago": formatDateTime(p.paid_at),
+      "Método de pago": PAYMENT_METHOD_LABELS[p.payment_method || ""] || p.payment_method || "",
+      Categoría: p.category?.nombre || "",
+      Descripción: p.descripcion || "",
+      "ID MP": p.mp_payment_id || "",
+    }))
+    const ws = XLSX.utils.json_to_sheet(rows)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Pagos recibidos")
+    XLSX.writeFile(wb, "pagos-recibidos.xlsx")
+  }
+
   return (
     <TooltipProvider delayDuration={300}>
     <>
@@ -406,14 +423,20 @@ export default function PagosRecibidosPage() {
                 </CardTitle>
                 <CardDescription>Pagos aprobados por MercadoPago</CardDescription>
               </div>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nombre o ID MP..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
-                />
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nombre o ID MP..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <Button variant="outline" size="sm" onClick={exportToExcel} disabled={payments.length === 0} className="shrink-0">
+                  <Download className="h-4 w-4 mr-1.5" />
+                  Excel
+                </Button>
               </div>
             </div>
 

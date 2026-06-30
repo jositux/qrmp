@@ -31,7 +31,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Search, Trash2, Loader2, TrendingUp, QrCode, DollarSign, Eye, Send, Tag, X, Plus, Calendar, Copy, Check, ExternalLink, CircleCheck, ArrowRight, ChevronDown } from "lucide-react"
+import { Search, Trash2, Loader2, TrendingUp, QrCode, DollarSign, Eye, Send, Tag, X, Plus, Calendar, Copy, Check, ExternalLink, CircleCheck, ArrowRight, ChevronDown, Download } from "lucide-react"
+import * as XLSX from "xlsx"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -315,6 +316,23 @@ export function PaymentsDashboard() {
       return matchesSearch && matchesCategory && matchesStatus
     })
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+  const exportToExcel = () => {
+    const rows = filteredPayments.map((p) => ({
+      Nombre: p.nombre,
+      Monto: p.monto,
+      Estado: p.status === "approved" ? "Pagado" : "Pendiente",
+      Teléfono: p.telefono || "",
+      Categoría: p.category?.nombre || "",
+      "ID MP": p.mp_payment_id || "",
+      Fecha: formatDateAR(p.created_at),
+      "Link de pago": p.payment_url || "",
+    }))
+    const ws = XLSX.utils.json_to_sheet(rows)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Cobros")
+    XLSX.writeFile(wb, "cobros.xlsx")
+  }
 
   const updatePaymentCategory = async (paymentId: string, categoryId: string | null) => {
     setUpdatingCategoryId(paymentId)
@@ -779,14 +797,20 @@ export function PaymentsDashboard() {
                 </CardTitle>
                 <CardDescription>Todos los QR generados</CardDescription>
               </div>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nombre..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
-                />
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nombre..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <Button variant="outline" size="sm" onClick={exportToExcel} disabled={filteredPayments.length === 0} className="shrink-0">
+                  <Download className="h-4 w-4 mr-1.5" />
+                  Excel
+                </Button>
               </div>
             </div>
             {/* Filters — una sola fila con separador */}
