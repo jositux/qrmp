@@ -20,6 +20,9 @@ import {
 const navigation = [
   { name: "Dashboard", href: "/panel", icon: BarChart3 },
   { name: "Cobros", href: "/panel/cobros", icon: QrCode },
+]
+
+const navigationAfterBell = [
   { name: "Config", href: "/panel/configuracion", icon: Settings },
 ]
 
@@ -98,6 +101,23 @@ export function MobileNav() {
           </span>
           Pagos
         </button>
+        {navigationAfterBell.map((item) => {
+          const isActive = pathname === item.href ||
+            (item.href !== "/panel" && pathname.startsWith(item.href))
+          return (
+            <button
+              key={item.name}
+              onClick={() => handleNavClick(item.href)}
+              className={cn(
+                "flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+              {item.name}
+            </button>
+          )
+        })}
       </div>
     </nav>
     </>
