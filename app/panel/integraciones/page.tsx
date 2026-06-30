@@ -169,7 +169,7 @@ export default function IntegracionesPage() {
                       </Button>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">Si perdiste tu clave, regenerá una nueva.</p>
+                  <p className="text-xs text-muted-foreground">Por seguridad la clave solo se mostró una vez al crearla. Si no la guardaste, regenerá una nueva.</p>
                 </div>
                 <Button variant="outline" onClick={regenerateKey} disabled={isCreating} className="w-full">
                   {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
