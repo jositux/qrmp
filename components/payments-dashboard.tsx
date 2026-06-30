@@ -98,10 +98,12 @@ function CategoryPopover({ payment, categories, updatingCategoryId, onUpdate, on
   const [newColor, setNewColor] = useState("#6366f1")
   const [creating, setCreating] = useState(false)
   const [showNew, setShowNew] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
 
   const handleCreate = async () => {
     if (!newName.trim()) return
     setCreating(true)
+    setCreateError(null)
     try {
       const res = await fetch("/api/categories", {
         method: "POST",
@@ -115,6 +117,8 @@ function CategoryPopover({ payment, categories, updatingCategoryId, onUpdate, on
         setNewName("")
         setShowNew(false)
         setOpen(false)
+      } else {
+        setCreateError(data.error ?? "Ya existe la categoría")
       }
     } finally {
       setCreating(false)
@@ -173,11 +177,14 @@ function CategoryPopover({ payment, categories, updatingCategoryId, onUpdate, on
                 autoFocus
                 placeholder="Nombre..."
                 value={newName}
-                onChange={(e) => setNewName(e.target.value)}
+                onChange={(e) => { setNewName(e.target.value); setCreateError(null) }}
                 maxLength={30}
                 onKeyDown={(e) => { if (e.key === "Enter") handleCreate(); if (e.key === "Escape") setShowNew(false) }}
                 className="w-full text-sm bg-muted rounded px-2 py-1 outline-none focus:ring-1 focus:ring-primary"
               />
+              {createError && (
+                <p className="text-xs text-destructive">{createError}</p>
+              )}
               <div className="flex gap-1.5">
                 {CATEGORY_COLORS.map((c) => (
                   <button key={c} type="button" onClick={() => setNewColor(c)}
@@ -192,7 +199,7 @@ function CategoryPopover({ payment, categories, updatingCategoryId, onUpdate, on
                 >
                   {creating ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : "Crear"}
                 </button>
-                <button onClick={() => { setShowNew(false); setNewName("") }}
+                <button onClick={() => { setShowNew(false); setNewName(""); setCreateError(null) }}
                   className="text-xs px-2 py-1 rounded hover:bg-muted"
                 >
                   <X className="h-3 w-3" />
@@ -994,6 +1001,7 @@ export function PaymentsDashboard() {
                       </TableHead>
                       <TableHead>Nombre</TableHead>
                       <TableHead>Estado</TableHead>
+                      <TableHead className="hidden lg:table-cell">ID MP</TableHead>
                       <TableHead>Telefono</TableHead>
                       <TableHead className="text-right">Monto</TableHead>
                       <TableHead className="hidden lg:table-cell">Categoria</TableHead>
@@ -1026,6 +1034,22 @@ export function PaymentsDashboard() {
                         <TableCell className="font-medium">{payment.nombre}</TableCell>
                         <TableCell>
                           <StatusBadge status={payment.status} mpPaymentId={payment.mp_payment_id} />
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          {payment.mp_payment_id ? (
+                            <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">
+                              {payment.mp_payment_id}
+                              <button
+                                onClick={() => navigator.clipboard.writeText(payment.mp_payment_id!)}
+                                className="ml-0.5 p-0.5 rounded hover:bg-muted transition-colors"
+                                title="Copiar ID"
+                              >
+                                <Copy className="h-3 w-3" />
+                              </button>
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {payment.telefono || "-"}

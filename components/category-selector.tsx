@@ -58,6 +58,7 @@ export function CategorySelector({ value, onChange, onCategoriesChange }: Catego
   const [newCategoryName, setNewCategoryName] = useState("")
   const [newCategoryColor, setNewCategoryColor] = useState("#6366f1")
   const [isCreating, setIsCreating] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const fetchCategories = async () => {
@@ -84,6 +85,7 @@ export function CategorySelector({ value, onChange, onCategoriesChange }: Catego
     if (!newCategoryName.trim()) return
 
     setIsCreating(true)
+    setCreateError(null)
     try {
       const res = await fetch("/api/categories", {
         method: "POST",
@@ -103,6 +105,8 @@ export function CategorySelector({ value, onChange, onCategoriesChange }: Catego
         setNewCategoryColor("#6366f1")
         setShowNewDialog(false)
         onCategoriesChange?.()
+      } else {
+        setCreateError(data.error ?? "Ya existe la categoría")
       }
     } catch (error) {
       console.error("Error creating category:", error)
@@ -253,7 +257,7 @@ export function CategorySelector({ value, onChange, onCategoriesChange }: Catego
                 id="category-name"
                 placeholder="Ej: Envios, Productos, Servicios..."
                 value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
+                onChange={(e) => { setNewCategoryName(e.target.value); setCreateError(null) }}
                 maxLength={30}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -262,6 +266,9 @@ export function CategorySelector({ value, onChange, onCategoriesChange }: Catego
                   }
                 }}
               />
+              {createError && (
+                <p className="text-xs text-destructive">{createError}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Color</Label>
@@ -291,7 +298,7 @@ export function CategorySelector({ value, onChange, onCategoriesChange }: Catego
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewDialog(false)}>
+            <Button variant="outline" onClick={() => { setShowNewDialog(false); setCreateError(null) }}>
               Cancelar
             </Button>
             <Button onClick={handleCreate} disabled={isCreating || !newCategoryName.trim()}>

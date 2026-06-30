@@ -83,10 +83,12 @@ function CategoryPopover({ payment, categories, updatingCategoryId, onUpdate, on
   const [newColor, setNewColor] = useState("#6366f1")
   const [creating, setCreating] = useState(false)
   const [showNew, setShowNew] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
 
   const handleCreate = async () => {
     if (!newName.trim()) return
     setCreating(true)
+    setCreateError(null)
     try {
       const res = await fetch("/api/categories", {
         method: "POST",
@@ -100,6 +102,8 @@ function CategoryPopover({ payment, categories, updatingCategoryId, onUpdate, on
         setNewName("")
         setShowNew(false)
         setOpen(false)
+      } else {
+        setCreateError(data.error ?? "Ya existe la categoría")
       }
     } finally {
       setCreating(false)
@@ -158,11 +162,14 @@ function CategoryPopover({ payment, categories, updatingCategoryId, onUpdate, on
                 autoFocus
                 placeholder="Nombre..."
                 value={newName}
-                onChange={(e) => setNewName(e.target.value)}
+                onChange={(e) => { setNewName(e.target.value); setCreateError(null) }}
                 maxLength={30}
                 onKeyDown={(e) => { if (e.key === "Enter") handleCreate(); if (e.key === "Escape") setShowNew(false) }}
                 className="w-full text-sm bg-muted rounded px-2 py-1 outline-none focus:ring-1 focus:ring-primary"
               />
+              {createError && (
+                <p className="text-xs text-destructive">{createError}</p>
+              )}
               <div className="flex gap-1.5">
                 {CATEGORY_COLORS.map((c) => (
                   <button key={c} type="button" onClick={() => setNewColor(c)}
@@ -177,7 +184,7 @@ function CategoryPopover({ payment, categories, updatingCategoryId, onUpdate, on
                 >
                   {creating ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : "Crear"}
                 </button>
-                <button onClick={() => { setShowNew(false); setNewName("") }}
+                <button onClick={() => { setShowNew(false); setNewName(""); setCreateError(null) }}
                   className="text-xs px-2 py-1 rounded hover:bg-muted"
                 >
                   <X className="h-3 w-3" />
