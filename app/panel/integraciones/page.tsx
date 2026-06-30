@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Copy, Eye, EyeOff, RefreshCw, Key, Webhook, Code, ExternalLink, Loader2, Trash2 } from "lucide-react"
+import { Copy, Eye, EyeOff, RefreshCw, Key, Webhook, Code, Loader2, Trash2 } from "lucide-react"
 
 interface ApiKey {
   id: string
@@ -76,7 +76,7 @@ export default function IntegracionesPage() {
 
   const activeKey = keys[0]
   const maskedKey = newKeyValue
-    ? newKeyValue
+    ? `${newKeyValue.slice(0, 12)}${"*".repeat(20)}`
     : activeKey
       ? `${activeKey.key_prefix}${"*".repeat(20)}`
       : ""
@@ -227,14 +227,6 @@ export default function IntegracionesPage() {
     "descripcion": "Envio #12345"
   }'`}</code>
               </pre>
-            </div>
-            <div className="mt-4 flex gap-3 flex-wrap">
-              <Button variant="outline" asChild className="w-full sm:w-auto">
-                <a href="#" className="flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4" />
-                  Ver documentacion completa
-                </a>
-              </Button>
             </div>
           </CardContent>
         </Card>
