@@ -35,10 +35,10 @@ interface AppSidebarProps {
 }
 
 const navigation = [
-  { name: "Dashboard", href: "/panel", icon: BarChart3 },
-  { name: "Pagos Recibidos", href: "/panel/pagos-recibidos", icon: CircleCheck },
-  { name: "Cobros", href: "/panel/cobros", icon: QrCode },
-  { name: "Configuracion", href: "/panel/configuracion", icon: Settings },
+  { name: "Métricas", href: "/panel", icon: BarChart3 },
+  { name: "Cobrar", href: "/panel/cobros", icon: QrCode },
+  { name: "Pagados", href: "/panel/pagos-recibidos", icon: CircleCheck },
+  { name: "Configuración", href: "/panel/configuracion", icon: Settings },
   { name: "Integraciones", href: "/panel/integraciones", icon: Puzzle },
 ]
 

@@ -323,7 +323,7 @@ export default function PagosRecibidosPage() {
     }))
     const ws = XLSX.utils.json_to_sheet(rows)
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, "Pagos recibidos")
+    XLSX.utils.book_append_sheet(wb, ws, "Pagados")
     XLSX.writeFile(wb, "pagos-recibidos.xlsx")
   }
 
@@ -398,7 +398,7 @@ export default function PagosRecibidosPage() {
         </Card>
         <Card className="shadow-sm border border-border/60">
           <CardContent className="px-4 py-3 sm:px-5 sm:py-3.5">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1.5">Pagos recibidos</p>
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1.5">Pagados</p>
             <div className="text-xl sm:text-2xl font-bold text-foreground leading-none">
               {total}
             </div>
@@ -414,7 +414,7 @@ export default function PagosRecibidosPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  Pagos recibidos
+                  Pagados
                   {total > 0 && (
                     <Badge variant="secondary" className="text-xs font-normal">
                       {total}

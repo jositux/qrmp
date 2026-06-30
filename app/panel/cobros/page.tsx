@@ -50,7 +50,7 @@ export default function CobrosPage() {
 
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Cobros</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Cobrar</h1>
           <p className="text-muted-foreground">
             Genera enlaces de pago y QR para tus clientes
           </p>
