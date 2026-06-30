@@ -530,9 +530,20 @@ export default function PagosRecibidosPage() {
                       </p>
                     </div>
 
-                    {/* Método + descripcion */}
+                    {/* Estado + ID MP + descripción */}
                     <div className="px-4 pb-3 space-y-1.5">
-                      <PaymentMethodBadge method={payment.payment_method} />
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                          <CircleCheck className="h-3 w-3" />
+                          Pagado
+                        </span>
+                        {payment.mp_payment_id && (
+                          <span className="inline-flex items-center gap-0.5 font-mono text-xs text-muted-foreground">
+                            {payment.mp_payment_id}
+                            <CopyButton text={payment.mp_payment_id} />
+                          </span>
+                        )}
+                      </div>
                       {payment.descripcion && (
                         <p className="text-xs text-muted-foreground line-clamp-2">{payment.descripcion}</p>
                       )}
@@ -547,19 +558,14 @@ export default function PagosRecibidosPage() {
                         onUpdate={updatePaymentCategory}
                         onCategoryCreated={handleCategoryCreated}
                       />
-                      <div className="flex items-center gap-1">
-                        {payment.mp_payment_id && (
-                          <CopyButton text={payment.mp_payment_id} />
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => setSelectedPayment(payment)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setSelectedPayment(payment)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 ))}
