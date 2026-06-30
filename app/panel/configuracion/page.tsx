@@ -129,6 +129,7 @@ export default function ConfiguracionPage() {
         <p className="text-muted-foreground">Administra tu cuenta y preferencias</p>
       </div>
 
+      <div className="grid gap-6 lg:grid-cols-2">
       {/* Apariencia */}
       <Card>
         <CardHeader>
@@ -235,7 +236,7 @@ export default function ConfiguracionPage() {
             </div>
           )}
 
-          {/* List */}
+          {/* Chips */}
           {loadingCats ? (
             <div className="flex items-center justify-center py-6">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -245,32 +246,31 @@ export default function ConfiguracionPage() {
               Aún no tenés categorías. Creá una para organizar tus cobros.
             </p>
           ) : (
-            <div className="space-y-1">
+            <div className="flex flex-wrap gap-2">
               {categories.map((cat) => (
-                <div
+                <span
                   key={cat.id}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-muted/50 transition-colors group"
+                  className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-full text-sm font-medium bg-muted"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                    <span className="text-sm font-medium">{cat.nombre}</span>
-                  </div>
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                  {cat.nombre}
                   <button
                     onClick={() => handleDeleteCategory(cat.id)}
                     disabled={deletingId === cat.id}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground"
+                    className="ml-0.5 p-0.5 rounded-full hover:bg-destructive/20 hover:text-destructive text-muted-foreground transition-colors"
                   >
                     {deletingId === cat.id
-                      ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      : <Trash2 className="h-3.5 w-3.5" />
+                      ? <Loader2 className="h-3 w-3 animate-spin" />
+                      : <X className="h-3 w-3" />
                     }
                   </button>
-                </div>
+                </span>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Cambiar contraseña */}
