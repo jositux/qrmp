@@ -18,8 +18,8 @@ import {
 } from "@/components/ui/alert-dialog"
 
 const navigation = [
-  { name: "Dashboard", href: "/panel", icon: BarChart3 },
-  { name: "Cobros", href: "/panel/cobros", icon: QrCode },
+  { name: "Métricas", href: "/panel", icon: BarChart3 },
+  { name: "Cobrar", href: "/panel/cobros", icon: QrCode },
 ]
 
 const navigationAfterBell = [
@@ -99,7 +99,7 @@ export function MobileNav() {
               </span>
             )}
           </span>
-          Pagos
+          Pagados
         </button>
         {navigationAfterBell.map((item) => {
           const isActive = pathname === item.href ||
