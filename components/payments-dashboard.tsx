@@ -595,7 +595,7 @@ export function PaymentsDashboard() {
       </AlertDialog>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {/* Total Solicitado */}
         <Card className="shadow-sm border border-border/60">
           <CardContent className="px-4 py-3 sm:px-5 sm:py-3.5">
@@ -624,13 +624,28 @@ export function PaymentsDashboard() {
         </Link>
 
         {/* Ticket promedio */}
-        <Card className="shadow-sm border border-border/60 col-span-2 sm:col-span-1">
+        <Card className="shadow-sm border border-border/60">
           <CardContent className="px-4 py-3 sm:px-5 sm:py-3.5">
             <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1.5">Ticket promedio</p>
             <div className="text-xl sm:text-2xl font-bold text-foreground truncate leading-none">
               {formatCurrency(stats?.totalPagos ? stats.totalMonto / stats.totalPagos : 0)}
             </div>
             <p className="text-[11px] text-muted-foreground mt-1.5">por cobro generado</p>
+          </CardContent>
+        </Card>
+
+        {/* Tasa de conversión */}
+        <Card className="shadow-sm border border-border/60 col-span-2 sm:col-span-1">
+          <CardContent className="px-4 py-3 sm:px-5 sm:py-3.5">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1.5">Conversión</p>
+            <div className="text-xl sm:text-2xl font-bold text-foreground truncate leading-none">
+              {stats?.totalPagos
+                ? `${Math.round((stats.totalPagados / stats.totalPagos) * 100)}%`
+                : "—"}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1.5">
+              {stats?.totalPagados || 0} de {stats?.totalPagos || 0} cobros pagados
+            </p>
           </CardContent>
         </Card>
       </div>
