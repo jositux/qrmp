@@ -694,7 +694,7 @@ export function PaymentsDashboard() {
                   Cobrado
                 </span>
               </div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              <span className="hidden sm:inline text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                 {new Date(dateFrom).toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}
                 {" — "}
                 {new Date(dateTo).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}
