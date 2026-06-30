@@ -6,7 +6,6 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
@@ -164,7 +163,6 @@ export function CategorySelector({ value, onChange, onCategoriesChange }: Catego
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0" align="start">
           <Command>
-            <CommandInput placeholder="Buscar categoria..." />
             <CommandList>
               <CommandEmpty>
                 {isLoading ? "Cargando..." : "No hay categorias"}
