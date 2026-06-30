@@ -517,24 +517,29 @@ export default function PagosRecibidosPage() {
                 {payments.map((payment) => (
                   <div
                     key={payment.id}
-                    className="p-4 rounded-xl border border-border/50 bg-card/50 space-y-2"
+                    className="rounded-xl border border-border/50 bg-card/50 overflow-hidden"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <p className="font-medium">{payment.nombre}</p>
+                    {/* Header */}
+                    <div className="flex items-start justify-between p-4 pb-3">
+                      <div className="space-y-0.5 flex-1 min-w-0 pr-3">
+                        <p className="font-semibold truncate">{payment.nombre}</p>
                         <p className="text-xs text-muted-foreground">{formatDateTime(payment.paid_at)}</p>
                       </div>
-                      <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                      <p className="text-lg font-bold text-green-600 dark:text-green-400 shrink-0">
                         {formatCurrency(payment.monto)}
                       </p>
                     </div>
-                    <div className="flex items-center justify-between">
+
+                    {/* Método + descripcion */}
+                    <div className="px-4 pb-3 space-y-1.5">
                       <PaymentMethodBadge method={payment.payment_method} />
                       {payment.descripcion && (
-                        <p className="text-xs text-muted-foreground truncate max-w-[160px]">{payment.descripcion}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{payment.descripcion}</p>
                       )}
                     </div>
-                    <div className="flex items-center justify-between">
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between px-4 py-2.5 border-t border-border/50 bg-muted/20">
                       <CategoryPopover
                         payment={payment}
                         categories={categories}
@@ -542,20 +547,17 @@ export default function PagosRecibidosPage() {
                         onUpdate={updatePaymentCategory}
                         onCategoryCreated={handleCategoryCreated}
                       />
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         {payment.mp_payment_id && (
-                          <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground/60 font-mono">
-                            MP# {payment.mp_payment_id}
-                            <CopyButton text={payment.mp_payment_id} />
-                          </span>
+                          <CopyButton text={payment.mp_payment_id} />
                         )}
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-8 w-8"
                           onClick={() => setSelectedPayment(payment)}
                         >
-                          <Eye className="h-3.5 w-3.5" />
+                          <Eye className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
