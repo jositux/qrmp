@@ -22,13 +22,13 @@ export async function GET(request: Request) {
 
     let query = supabase
       .from("payments")
-      .select("id, nombre, monto, descripcion, paid_at, payment_method, mp_payment_id, category_id, category:categories(id, nombre, color)", { count: "exact" })
+      .select("id, nombre, monto, descripcion, paid_at, payment_method, mp_payment_id, category_id, remito, viajante_id, category:categories(id, nombre, color), viajante:viajantes(id, dni, nombre)", { count: "exact" })
       .eq("user_id", user.id)
       .eq("status", "approved")
       .order("paid_at", { ascending: false })
 
     if (search) {
-      query = query.or(`nombre.ilike.%${search}%,mp_payment_id.ilike.%${search}%`)
+      query = query.or(`nombre.ilike.%${search}%,mp_payment_id.ilike.%${search}%,remito.ilike.%${search}%`)
     }
 
     if (from) {

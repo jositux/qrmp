@@ -20,6 +20,12 @@ interface Category {
   color: string
 }
 
+interface Viajante {
+  id: string
+  dni: string
+  nombre: string
+}
+
 interface ReceivedPayment {
   id: string
   nombre: string
@@ -30,6 +36,9 @@ interface ReceivedPayment {
   mp_payment_id: string | null
   category_id: string | null
   category: Category | null
+  viajante_id: string | null
+  viajante: Viajante | null
+  remito: string | null
 }
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
@@ -427,7 +436,7 @@ export default function PagosRecibidosPage() {
                 <div className="relative flex-1 sm:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar por nombre o ID MP..."
+                    placeholder="Buscar por nombre, remito o ID MP..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="pl-9 placeholder:text-xs sm:placeholder:text-sm"
@@ -523,7 +532,15 @@ export default function PagosRecibidosPage() {
                     <div className="flex items-start justify-between p-4 pb-3">
                       <div className="space-y-0.5 flex-1 min-w-0 pr-3">
                         <p className="font-semibold truncate">{payment.nombre}</p>
-                        <p className="text-xs text-muted-foreground">{formatDateTime(payment.paid_at)}</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-xs text-muted-foreground">{formatDateTime(payment.paid_at)}</p>
+                          {payment.remito && (
+                            <span className="text-xs text-muted-foreground">· Remito {payment.remito}</span>
+                          )}
+                          {payment.viajante && (
+                            <span className="text-xs text-muted-foreground">· {payment.viajante.nombre}</span>
+                          )}
+                        </div>
                       </div>
                       <p className="text-lg font-bold text-green-600 dark:text-green-400 shrink-0">
                         {formatCurrency(payment.monto)}
@@ -577,12 +594,14 @@ export default function PagosRecibidosPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Cliente</TableHead>
+                      <TableHead className="hidden lg:table-cell">Remito</TableHead>
+                      <TableHead className="hidden lg:table-cell">Viajante</TableHead>
                       <TableHead className="text-right">Monto</TableHead>
                       <TableHead>Fecha y hora</TableHead>
                       <TableHead>Método de pago</TableHead>
                       <TableHead>Categoría</TableHead>
-                      <TableHead>Descripción</TableHead>
-                      <TableHead className="text-muted-foreground">ID MP</TableHead>
+                      <TableHead className="hidden lg:table-cell">Descripción</TableHead>
+                      <TableHead className="text-muted-foreground hidden lg:table-cell">ID MP</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -590,6 +609,12 @@ export default function PagosRecibidosPage() {
                     {payments.map((payment) => (
                       <TableRow key={payment.id}>
                         <TableCell className="font-medium">{payment.nombre}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
+                          {payment.remito ?? <span className="text-muted-foreground/40">-</span>}
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">
+                          {payment.viajante?.nombre ?? <span className="text-muted-foreground/40">-</span>}
+                        </TableCell>
                         <TableCell className="text-right font-bold text-green-600 dark:text-green-400">
                           {formatCurrency(payment.monto)}
                         </TableCell>
@@ -608,10 +633,10 @@ export default function PagosRecibidosPage() {
                             onCategoryCreated={handleCategoryCreated}
                           />
                         </TableCell>
-                        <TableCell className="text-muted-foreground max-w-[200px] truncate">
+                        <TableCell className="hidden lg:table-cell text-muted-foreground max-w-[200px] truncate">
                           {payment.descripcion || "-"}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           {payment.mp_payment_id ? (
                             <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">
                               {payment.mp_payment_id}

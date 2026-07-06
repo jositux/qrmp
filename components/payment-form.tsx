@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Loader2, QrCode, ExternalLink, Copy, Check, Share2 } from "lucide-react"
 import { formatCurrency } from "@/lib/format"
 import { CategorySelector } from "@/components/category-selector"
+import { ViajanteSelector } from "@/components/viajante-selector"
 
 interface PaymentResponse {
   success: boolean
@@ -24,6 +25,8 @@ export function PaymentForm() {
   const [clientName, setClientName] = useState("")
   const [clientPhone, setClientPhone] = useState("")
   const [categoryId, setCategoryId] = useState<string | null>(null)
+  const [viajanteId, setViajanteId] = useState<string | null>(null)
+  const [remito, setRemito] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [paymentData, setPaymentData] = useState<PaymentResponse | null>(null)
@@ -124,6 +127,8 @@ export function PaymentForm() {
             preference_id: data.preference_id,
             external_reference: data.external_reference,
             category_id: categoryId,
+            viajante_id: viajanteId,
+            remito: remito || null,
           }),
         })
       } catch (saveError) {
@@ -150,6 +155,8 @@ export function PaymentForm() {
     setClientName("")
     setClientPhone("")
     setCategoryId(null)
+    setViajanteId(null)
+    setRemito("")
     setError("")
   }
 
@@ -280,6 +287,26 @@ export function PaymentForm() {
                     value={categoryId}
                     onChange={(id) => setCategoryId(id)}
                   />
+                </div>
+              </div>
+
+              {/* Remito y Viajante */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="remito" className="text-sm font-medium">Remito <span className="text-muted-foreground font-normal">(opcional)</span></Label>
+                  <Input
+                    id="remito"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Nº de remito"
+                    value={remito}
+                    onChange={(e) => setRemito(e.target.value.replace(/\D/g, ""))}
+                    className="h-11 placeholder:text-muted-foreground/60"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Viajante <span className="text-muted-foreground font-normal">(opcional)</span></Label>
+                  <ViajanteSelector value={viajanteId} onChange={setViajanteId} />
                 </div>
               </div>
 

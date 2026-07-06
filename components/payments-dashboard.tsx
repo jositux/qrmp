@@ -46,6 +46,12 @@ interface Category {
   color: string
 }
 
+interface Viajante {
+  id: string
+  dni: string
+  nombre: string
+}
+
 interface Payment {
   id: string
   nombre: string
@@ -55,6 +61,9 @@ interface Payment {
   payment_url: string | null
   category_id: string | null
   category: Category | null
+  viajante_id: string | null
+  viajante: Viajante | null
+  remito: string | null
   created_at: string
   status: string | null
   mp_payment_id: string | null
@@ -318,7 +327,11 @@ export function PaymentsDashboard() {
   // Filtrar pagos localmente para la tabla
   const filteredPayments = allPayments
     .filter((payment) => {
-      const matchesSearch = payment.nombre.toLowerCase().includes(debouncedSearch.toLowerCase())
+      const q = debouncedSearch.toLowerCase()
+      const matchesSearch = !q ||
+        payment.nombre.toLowerCase().includes(q) ||
+        (payment.remito?.toLowerCase().includes(q)) ||
+        (payment.viajante?.nombre.toLowerCase().includes(q))
       const matchesCategory = !selectedCategoryId || payment.category_id === selectedCategoryId
       const matchesStatus =
         !selectedStatus ||
@@ -806,7 +819,7 @@ export function PaymentsDashboard() {
                 <div className="relative flex-1 sm:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar por nombre..."
+                    placeholder="Buscar por nombre, remito o viajante..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="pl-9 text-sm placeholder:text-xs sm:placeholder:text-sm"
@@ -967,7 +980,15 @@ export function PaymentsDashboard() {
                         />
                         <div className="space-y-1">
                           <p className="font-medium">{payment.nombre}</p>
-                          <p className="text-xs text-muted-foreground">{formatDate(payment.created_at)}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-xs text-muted-foreground">{formatDate(payment.created_at)}</p>
+                            {payment.remito && (
+                              <span className="text-xs text-muted-foreground">· Remito {payment.remito}</span>
+                            )}
+                            {payment.viajante && (
+                              <span className="text-xs text-muted-foreground">· {payment.viajante.nombre}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <p className="text-lg font-bold text-primary">{formatCurrency(payment.monto)}</p>
@@ -1049,6 +1070,8 @@ export function PaymentsDashboard() {
                         />
                       </TableHead>
                       <TableHead>Nombre</TableHead>
+                      <TableHead className="hidden lg:table-cell">Remito</TableHead>
+                      <TableHead className="hidden lg:table-cell">Viajante</TableHead>
                       <TableHead>Estado</TableHead>
                       <TableHead className="hidden lg:table-cell">ID MP</TableHead>
                       <TableHead>Telefono</TableHead>
@@ -1081,6 +1104,12 @@ export function PaymentsDashboard() {
                           </Tooltip>
                         </TableCell>
                         <TableCell className="font-medium">{payment.nombre}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
+                          {payment.remito ?? <span className="text-muted-foreground/40">-</span>}
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">
+                          {payment.viajante?.nombre ?? <span className="text-muted-foreground/40">-</span>}
+                        </TableCell>
                         <TableCell>
                           <StatusBadge status={payment.status} mpPaymentId={payment.mp_payment_id} />
                         </TableCell>

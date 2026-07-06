@@ -16,6 +16,8 @@ const bodySchema = z.object({
   descripcion: z.string().trim().max(100).optional(),
   category_id: z.string().uuid().optional(),
   external_reference: z.string().trim().max(100).optional(),
+  viajante_dni: z.string().regex(/^\d{8}$/, "El DNI debe tener 8 dígitos").optional(),
+  remito: z.string().trim().max(50).optional(),
 })
 
 const RATE_LIMIT_PER_MINUTE = 100
@@ -60,7 +62,26 @@ export async function POST(request: NextRequest) {
         { status: 400, headers: corsHeaders }
       )
     }
-    const { amount, nombre, telefono, descripcion, category_id, external_reference } = parsed.data
+    const { amount, nombre, telefono, descripcion, category_id, external_reference, viajante_dni, remito } = parsed.data
+
+    // Resolver viajante_dni → viajante_id
+    let viajanteId: string | null = null
+    if (viajante_dni) {
+      const { data: viajante } = await supabase
+        .from("viajantes")
+        .select("id")
+        .eq("user_id", keyRow.user_id)
+        .eq("dni", viajante_dni)
+        .single()
+
+      if (!viajante) {
+        return NextResponse.json(
+          { error: `Viajante con DNI ${viajante_dni} no encontrado. Crealo primero en el panel de Integraciones.` },
+          { status: 400, headers: corsHeaders }
+        )
+      }
+      viajanteId = viajante.id
+    }
 
     const oneMinuteAgo = new Date(Date.now() - 60_000).toISOString()
     const { count } = await supabase
@@ -142,6 +163,8 @@ export async function POST(request: NextRequest) {
         preference_id: preferenceData.id,
         external_reference: finalExternalReference,
         category_id: category_id || null,
+        viajante_id: viajanteId,
+        remito: remito || null,
       })
       .select("id")
       .single()

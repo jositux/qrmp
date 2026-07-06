@@ -19,13 +19,14 @@ export async function GET(request: Request) {
       .from("payments")
       .select(`
         *,
-        category:categories(id, nombre, color)
+        category:categories(id, nombre, color),
+        viajante:viajantes(id, dni, nombre)
       `)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
 
     if (search) {
-      query = query.ilike("nombre", `%${search}%`)
+      query = query.or(`nombre.ilike.%${search}%,remito.ilike.%${search}%`)
     }
 
     if (categoryId) {
