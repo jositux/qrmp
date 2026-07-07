@@ -29,10 +29,24 @@ import { Label } from "@/components/ui/label"
 import { Check, ChevronsUpDown, Plus, Loader2, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+interface Ciudad {
+  id: string
+  nombre: string
+}
+
+interface Ruta {
+  id: string
+  numero: number
+  nombre: string
+  ciudad: Ciudad | null
+}
+
 interface Viajante {
   id: string
   dni: string
   nombre: string
+  ruta_id: string | null
+  ruta: Ruta | null
 }
 
 interface ViajanteSelectorProps {
@@ -67,6 +81,25 @@ export function ViajanteSelector({ value, onChange }: ViajanteSelectorProps) {
   }, [])
 
   const selected = viajantes.find((v) => v.id === value)
+
+  // Agrupar por ruta → ciudad
+  const groups: { label: string; viajantes: Viajante[] }[] = []
+  const sinRuta: Viajante[] = []
+
+  viajantes.forEach((v) => {
+    if (!v.ruta) {
+      sinRuta.push(v)
+      return
+    }
+    const ciudadLabel = v.ruta.ciudad ? v.ruta.ciudad.nombre : "Sin ciudad"
+    const groupLabel = `${ciudadLabel} — Ruta ${v.ruta.numero} ${v.ruta.nombre}`
+    const existing = groups.find((g) => g.label === groupLabel)
+    if (existing) {
+      existing.viajantes.push(v)
+    } else {
+      groups.push({ label: groupLabel, viajantes: [v] })
+    }
+  })
 
   const handleCreate = async () => {
     if (!/^\d{8}$/.test(newDni)) {
@@ -120,7 +153,12 @@ export function ViajanteSelector({ value, onChange }: ViajanteSelectorProps) {
               <span className="flex items-center gap-2 truncate">
                 <User className="w-4 h-4 shrink-0 text-muted-foreground" />
                 <span className="truncate">{selected.nombre}</span>
-                <span className="text-muted-foreground text-xs shrink-0">DNI {selected.dni}</span>
+                {selected.ruta && (
+                  <span className="text-muted-foreground text-xs shrink-0">
+                    R{selected.ruta.numero}
+                    {selected.ruta.ciudad ? ` · ${selected.ruta.ciudad.nombre}` : ""}
+                  </span>
+                )}
               </span>
             ) : (
               <span className="text-muted-foreground flex items-center gap-2">
@@ -131,36 +169,57 @@ export function ViajanteSelector({ value, onChange }: ViajanteSelectorProps) {
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0" align="start">
+        <PopoverContent className="w-[320px] p-0" align="start">
           <Command>
             <CommandInput placeholder="Buscar por nombre..." />
             <CommandList>
               <CommandEmpty>
                 {isLoading ? "Cargando..." : "No hay viajantes"}
               </CommandEmpty>
-              <CommandGroup>
-                {value && (
+
+              {value && (
+                <CommandGroup>
                   <CommandItem
                     onSelect={() => { onChange(null); setOpen(false) }}
                     className="text-muted-foreground"
                   >
-                    <span className="flex-1">Sin viajante</span>
+                    Sin viajante
                   </CommandItem>
-                )}
-                {viajantes.map((v) => (
-                  <CommandItem
-                    key={v.id}
-                    value={v.nombre}
-                    onSelect={() => { onChange(v.id); setOpen(false) }}
-                  >
-                    <span className="flex-1 truncate">{v.nombre}</span>
-                    <span className="text-xs text-muted-foreground ml-2 shrink-0">DNI {v.dni}</span>
-                    <Check
-                      className={cn("ml-2 h-4 w-4 shrink-0", value === v.id ? "opacity-100" : "opacity-0")}
-                    />
-                  </CommandItem>
-                ))}
-              </CommandGroup>
+                </CommandGroup>
+              )}
+
+              {groups.map((group) => (
+                <CommandGroup key={group.label} heading={group.label}>
+                  {group.viajantes.map((v) => (
+                    <CommandItem
+                      key={v.id}
+                      value={`${v.nombre} ${v.dni}`}
+                      onSelect={() => { onChange(v.id); setOpen(false) }}
+                    >
+                      <span className="flex-1 truncate">{v.nombre}</span>
+                      <span className="text-xs text-muted-foreground ml-2 shrink-0">DNI {v.dni}</span>
+                      <Check className={cn("ml-2 h-4 w-4 shrink-0", value === v.id ? "opacity-100" : "opacity-0")} />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              ))}
+
+              {sinRuta.length > 0 && (
+                <CommandGroup heading="Sin ruta asignada">
+                  {sinRuta.map((v) => (
+                    <CommandItem
+                      key={v.id}
+                      value={`${v.nombre} ${v.dni}`}
+                      onSelect={() => { onChange(v.id); setOpen(false) }}
+                    >
+                      <span className="flex-1 truncate">{v.nombre}</span>
+                      <span className="text-xs text-muted-foreground ml-2 shrink-0">DNI {v.dni}</span>
+                      <Check className={cn("ml-2 h-4 w-4 shrink-0", value === v.id ? "opacity-100" : "opacity-0")} />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+
               <CommandSeparator />
               <CommandGroup>
                 <CommandItem
@@ -180,9 +239,7 @@ export function ViajanteSelector({ value, onChange }: ViajanteSelectorProps) {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Nuevo viajante</DialogTitle>
-            <DialogDescription>
-              Ingresá el DNI y el nombre del viajante
-            </DialogDescription>
+            <DialogDescription>Ingresá el DNI y nombre. Podés asignar la ruta desde Configuración.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -191,11 +248,7 @@ export function ViajanteSelector({ value, onChange }: ViajanteSelectorProps) {
                 id="viajante-dni"
                 placeholder="12345678"
                 value={newDni}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, "").slice(0, 8)
-                  setNewDni(v)
-                  setCreateError(null)
-                }}
+                onChange={(e) => { setNewDni(e.target.value.replace(/\D/g, "").slice(0, 8)); setCreateError(null) }}
                 inputMode="numeric"
                 maxLength={8}
               />
@@ -209,16 +262,9 @@ export function ViajanteSelector({ value, onChange }: ViajanteSelectorProps) {
                   value={newNombre}
                   onChange={(e) => { setNewNombre(e.target.value); setCreateError(null) }}
                   maxLength={100}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") { e.preventDefault(); handleCreate() }
-                  }}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCreate() } }}
                 />
-                <Button
-                  size="icon"
-                  onClick={handleCreate}
-                  disabled={isCreating}
-                  className="shrink-0 sm:hidden"
-                >
+                <Button size="icon" onClick={handleCreate} disabled={isCreating} className="shrink-0 sm:hidden">
                   {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                 </Button>
               </div>
@@ -226,15 +272,9 @@ export function ViajanteSelector({ value, onChange }: ViajanteSelectorProps) {
             {createError && <p className="text-xs text-destructive">{createError}</p>}
           </div>
           <DialogFooter className="hidden sm:flex">
-            <Button variant="outline" onClick={() => { setShowNewDialog(false); setCreateError(null) }}>
-              Cancelar
-            </Button>
+            <Button variant="outline" onClick={() => { setShowNewDialog(false); setCreateError(null) }}>Cancelar</Button>
             <Button onClick={handleCreate} disabled={isCreating}>
-              {isCreating ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creando...</>
-              ) : (
-                "Crear viajante"
-              )}
+              {isCreating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creando...</> : "Crear viajante"}
             </Button>
           </DialogFooter>
         </DialogContent>

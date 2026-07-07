@@ -8,7 +8,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("viajantes")
-    .select("id, dni, nombre, created_at")
+    .select("id, dni, nombre, ruta_id, ruta:rutas(id, numero, nombre, ciudad:ciudades(id, nombre))")
     .eq("user_id", user.id)
     .order("nombre")
 
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
   const body = await request.json()
-  const { dni, nombre } = body
+  const { dni, nombre, ruta_id } = body
 
   if (!dni || !/^\d{8}$/.test(dni)) {
     return NextResponse.json({ error: "El DNI debe tener exactamente 8 dígitos" }, { status: 400 })
@@ -33,8 +33,8 @@ export async function POST(request: Request) {
 
   const { data, error } = await supabase
     .from("viajantes")
-    .insert({ user_id: user.id, dni, nombre: nombre.trim() })
-    .select()
+    .insert({ user_id: user.id, dni, nombre: nombre.trim(), ruta_id: ruta_id || null })
+    .select("id, dni, nombre, ruta_id, ruta:rutas(id, numero, nombre, ciudad:ciudades(id, nombre))")
     .single()
 
   if (error) {
@@ -43,6 +43,27 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
+  return NextResponse.json({ viajante: data })
+}
+
+export async function PATCH(request: Request) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+
+  const body = await request.json()
+  const { id, ruta_id } = body
+  if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 })
+
+  const { data, error } = await supabase
+    .from("viajantes")
+    .update({ ruta_id: ruta_id ?? null })
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select("id, dni, nombre, ruta_id, ruta:rutas(id, numero, nombre, ciudad:ciudades(id, nombre))")
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ viajante: data })
 }
 
