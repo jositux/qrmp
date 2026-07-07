@@ -214,7 +214,7 @@ export default function ConfiguracionPage() {
 
   // --- Rutas ---
   const handleCreateRuta = async () => {
-    if (!newRutaNumero || !newRutaNombre.trim()) { setRutaError("Número y nombre son requeridos"); return }
+    if (!newRutaNumero || !newRutaNombre.trim() || !newRutaCiudadId) { setRutaError("Número, nombre y ciudad son requeridos"); return }
     setCreatingRuta(true)
     setRutaError(null)
     try {
@@ -486,7 +486,7 @@ export default function ConfiguracionPage() {
                         <p className="text-xs text-muted-foreground">{rutasCount} ruta{rutasCount !== 1 ? "s" : ""}</p>
                       </div>
                       <button onClick={() => handleDeleteCiudad(ciudad.id)} disabled={deletingCiudadId === ciudad.id}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded hover:bg-destructive/20 hover:text-destructive text-muted-foreground transition-all">
+                        className="p-1.5 rounded hover:bg-destructive/20 hover:text-destructive text-muted-foreground transition-all">
                         {deletingCiudadId === ciudad.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                       </button>
                     </div>
@@ -534,7 +534,7 @@ export default function ConfiguracionPage() {
                     <Label className="text-xs">Ciudad</Label>
                     <Select value={newRutaCiudadId} onValueChange={setNewRutaCiudadId}>
                       <SelectTrigger className="h-9">
-                        <SelectValue placeholder="Opcional" />
+                        <SelectValue placeholder="Requerida" />
                       </SelectTrigger>
                       <SelectContent>
                         {ciudades.map((c) => (
@@ -557,7 +557,7 @@ export default function ConfiguracionPage() {
                 </div>
                 {rutaError && <p className="text-sm text-destructive">{rutaError}</p>}
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={handleCreateRuta} disabled={!newRutaNumero || !newRutaNombre.trim() || creatingRuta}>
+                  <Button size="sm" onClick={handleCreateRuta} disabled={!newRutaNumero || !newRutaNombre.trim() || !newRutaCiudadId || creatingRuta}>
                     {creatingRuta ? <Loader2 className="h-4 w-4 animate-spin" /> : "Crear ruta"}
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => { setShowNewRuta(false); setNewRutaNumero(""); setNewRutaNombre(""); setRutaError(null) }}>
@@ -590,7 +590,7 @@ export default function ConfiguracionPage() {
                               <p className="text-xs text-muted-foreground">{viajantesCount} viajante{viajantesCount !== 1 ? "s" : ""}</p>
                             </div>
                             <button onClick={() => handleDeleteRuta(ruta.id)} disabled={deletingRutaId === ruta.id}
-                              className="opacity-0 group-hover:opacity-100 p-1.5 rounded hover:bg-destructive/20 hover:text-destructive text-muted-foreground transition-all">
+                              className="p-1.5 rounded hover:bg-destructive/20 hover:text-destructive text-muted-foreground transition-all">
                               {deletingRutaId === ruta.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                             </button>
                           </div>
@@ -725,7 +725,7 @@ export default function ConfiguracionPage() {
                       </td>
                       <td className="py-2 px-3">
                         <button onClick={() => handleDeleteViajante(v.id)} disabled={deletingViajanteId === v.id}
-                          className="opacity-0 group-hover:opacity-100 p-1.5 rounded hover:bg-destructive/20 hover:text-destructive text-muted-foreground transition-all">
+                          className="p-1.5 rounded hover:bg-destructive/20 hover:text-destructive text-muted-foreground transition-all">
                           {deletingViajanteId === v.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                         </button>
                       </td>

@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Search, Trash2, Loader2, TrendingUp, QrCode, DollarSign, Eye, Send, Tag, X, Plus, Calendar, Copy, Check, ExternalLink, CircleCheck, ArrowRight, ChevronDown, Download } from "lucide-react"
+import { Search, Trash2, Loader2, TrendingUp, QrCode, DollarSign, Eye, Send, Tag, X, Plus, Calendar, Copy, Check, ExternalLink, CircleCheck, ArrowRight, ChevronDown, Download, MapPin } from "lucide-react"
 import * as XLSX from "xlsx"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
@@ -884,32 +884,32 @@ export function PaymentsDashboard() {
             <div className="flex flex-wrap items-center gap-2">
               {/* Estado */}
               <span className="text-xs text-muted-foreground hidden sm:block">Estado:</span>
-              <Button
-                variant={selectedStatus === null ? "default" : "outline"}
-                size="sm"
+              <button
                 onClick={() => setSelectedStatus(null)}
-                className="h-7 text-xs"
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  selectedStatus === null ? "bg-foreground text-background" : "bg-muted hover:bg-muted/70 text-muted-foreground"
+                }`}
               >
                 Todos
-              </Button>
-              <Button
-                variant={selectedStatus === "pending" ? "default" : "outline"}
-                size="sm"
+              </button>
+              <button
                 onClick={() => setSelectedStatus(selectedStatus === "pending" ? null : "pending")}
-                className="h-7 text-xs gap-1.5"
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  selectedStatus === "pending" ? "bg-foreground text-background" : "bg-muted hover:bg-muted/70 text-muted-foreground"
+                }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
                 Pendiente
-              </Button>
-              <Button
-                variant={selectedStatus === "approved" ? "default" : "outline"}
-                size="sm"
+              </button>
+              <button
                 onClick={() => setSelectedStatus(selectedStatus === "approved" ? null : "approved")}
-                className="h-7 text-xs gap-1.5"
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  selectedStatus === "approved" ? "bg-foreground text-background" : "bg-muted hover:bg-muted/70 text-muted-foreground"
+                }`}
               >
                 <CircleCheck className="h-3 w-3 text-green-500" />
                 Pagado
-              </Button>
+              </button>
 
               {/* Separador */}
               {categories.length > 0 && (
@@ -923,37 +923,31 @@ export function PaymentsDashboard() {
                 </span>
               )}
               {categories.map((category) => (
-                <Button
+                <button
                   key={category.id}
-                  variant={selectedCategoryId === category.id ? "default" : "outline"}
-                  size="sm"
                   onClick={() => setSelectedCategoryId(selectedCategoryId === category.id ? null : category.id)}
-                  className="h-7 text-xs gap-1.5"
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    selectedCategoryId === category.id ? "bg-foreground text-background" : "bg-muted hover:bg-muted/70 text-muted-foreground"
+                  }`}
                 >
-                  <span
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: category.color }}
-                  />
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: category.color }} />
                   {category.nombre}
-                </Button>
+                </button>
               ))}
               {(selectedCategoryId || selectedStatus) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={() => { setSelectedCategoryId(null); setSelectedStatus(null) }}
-                  className="h-7 text-xs text-muted-foreground"
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <X className="h-3 w-3 mr-1" />
-                  Limpiar
-                </Button>
+                  <X className="h-3 w-3" />Limpiar
+                </button>
               )}
             </div>
 
             {/* Ciudad / Ruta / Viajante */}
             {(ciudades.length > 0 || rutas.length > 0 || viajantesLookup.length > 0) && (
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-muted-foreground hidden sm:block">Ruta:</span>
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
                 {ciudades.length > 0 && (
                   <Select value={filterCiudadId ?? "__all__"} onValueChange={(v) => { setFilterCiudadId(v === "__all__" ? null : v); setFilterRutaId(null); setFilterViajanteId(null) }}>
                     <SelectTrigger className="h-7 text-xs w-[140px]"><SelectValue placeholder="Ciudad" /></SelectTrigger>
@@ -989,9 +983,12 @@ export function PaymentsDashboard() {
                   </Select>
                 )}
                 {(filterCiudadId || filterRutaId || filterViajanteId) && (
-                  <Button variant="ghost" size="sm" onClick={() => { setFilterCiudadId(null); setFilterRutaId(null); setFilterViajanteId(null) }} className="h-7 text-xs text-muted-foreground">
-                    <X className="h-3 w-3 mr-1" />Limpiar
-                  </Button>
+                  <button
+                    onClick={() => { setFilterCiudadId(null); setFilterRutaId(null); setFilterViajanteId(null) }}
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <X className="h-3 w-3" />Limpiar
+                  </button>
                 )}
               </div>
             )}
