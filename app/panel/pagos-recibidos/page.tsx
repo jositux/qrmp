@@ -681,38 +681,32 @@ export default function PagosRecibidosPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Cliente</TableHead>
-                      <TableHead className="hidden lg:table-cell">Remito</TableHead>
-                      <TableHead className="hidden lg:table-cell">Viajante</TableHead>
+                      <TableHead>Nombre</TableHead>
                       <TableHead className="text-right">Monto</TableHead>
-                      <TableHead>Fecha y hora</TableHead>
-                      <TableHead>Método de pago</TableHead>
+                      <TableHead className="hidden sm:table-cell">Método</TableHead>
                       <TableHead>Categoría</TableHead>
-                      <TableHead className="hidden lg:table-cell">Descripción</TableHead>
-                      <TableHead className="text-muted-foreground hidden lg:table-cell">ID MP</TableHead>
+                      <TableHead className="hidden sm:table-cell">Fecha y hora</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {payments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell className="font-medium">{payment.nombre}</TableCell>
-                        <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
-                          {payment.remito ?? <span className="text-muted-foreground/40">-</span>}
+                      <TableRow key={payment.id} className="cursor-pointer hover:bg-muted/30" onClick={() => setSelectedPayment(payment)}>
+                        <TableCell>
+                          <p className="font-medium">{payment.nombre}</p>
+                          {(payment.viajante || payment.remito) && (
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {[payment.viajante?.nombre, payment.remito ? `Rem. ${payment.remito}` : null].filter(Boolean).join(" · ")}
+                            </p>
+                          )}
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell text-sm">
-                          {payment.viajante?.nombre ?? <span className="text-muted-foreground/40">-</span>}
-                        </TableCell>
-                        <TableCell className="text-right font-bold text-green-600 dark:text-green-400">
+                        <TableCell className="text-right font-bold text-green-600 dark:text-green-400 tabular-nums">
                           {formatCurrency(payment.monto)}
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {formatDateTime(payment.paid_at)}
-                        </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           <PaymentMethodBadge method={payment.payment_method} />
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <CategoryPopover
                             payment={payment}
                             categories={categories}
@@ -721,26 +715,11 @@ export default function PagosRecibidosPage() {
                             onCategoryCreated={handleCategoryCreated}
                           />
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell text-muted-foreground max-w-[200px] truncate">
-                          {payment.descripcion || "-"}
+                        <TableCell className="hidden sm:table-cell text-muted-foreground text-sm tabular-nums">
+                          {formatDateTime(payment.paid_at)}
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          {payment.mp_payment_id ? (
-                            <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">
-                              {payment.mp_payment_id}
-                              <CopyButton text={payment.mp_payment_id} />
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => setSelectedPayment(payment)}
-                          >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedPayment(payment)}>
                             <Eye className="h-4 w-4" />
                           </Button>
                         </TableCell>
