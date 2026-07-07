@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Search, Loader2, CircleCheck, Plus, X, Check, ChevronDown, Copy, Eye, Download } from "lucide-react"
+import { Search, Loader2, CircleCheck, Plus, X, Check, ChevronDown, Copy, Eye, Download, MapPin } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import * as XLSX from "xlsx"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -25,6 +26,10 @@ interface Viajante {
   dni: string
   nombre: string
 }
+
+interface CiudadLookup { id: string; nombre: string }
+interface RutaLookup { id: string; numero: number; nombre: string; ciudad_id: string | null }
+interface ViajanteLookup { id: string; nombre: string; ruta_id: string | null }
 
 interface ReceivedPayment {
   id: string
@@ -234,6 +239,12 @@ const PAGE_SIZE = 20
 export default function PagosRecibidosPage() {
   const [payments, setPayments] = useState<ReceivedPayment[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+  const [ciudades, setCiudades] = useState<CiudadLookup[]>([])
+  const [rutas, setRutas] = useState<RutaLookup[]>([])
+  const [viajantes, setViajantes] = useState<ViajanteLookup[]>([])
+  const [filterCiudadId, setFilterCiudadId] = useState<string | null>(null)
+  const [filterRutaId, setFilterRutaId] = useState<string | null>(null)
+  const [filterViajanteId, setFilterViajanteId] = useState<string | null>(null)
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
@@ -249,11 +260,22 @@ export default function PagosRecibidosPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    fetch("/api/categories")
-      .then((r) => r.json())
-      .then((data) => { if (data.categories) setCategories(data.categories) })
-      .catch(() => {})
+    fetch("/api/categories").then(r => r.json()).then(d => { if (d.categories) setCategories(d.categories) }).catch(() => {})
+    fetch("/api/ciudades").then(r => r.json()).then(d => { if (d.ciudades) setCiudades(d.ciudades) }).catch(() => {})
+    fetch("/api/rutas").then(r => r.json()).then(d => { if (d.rutas) setRutas(d.rutas) }).catch(() => {})
+    fetch("/api/viajantes").then(r => r.json()).then(d => { if (d.viajantes) setViajantes(d.viajantes) }).catch(() => {})
   }, [])
+
+  // Resolve effective viajante IDs from filter selections
+  const effectiveViajanteIds = (() => {
+    if (filterViajanteId) return [filterViajanteId]
+    if (filterRutaId) return viajantes.filter(v => v.ruta_id === filterRutaId).map(v => v.id)
+    if (filterCiudadId) {
+      const rutaIds = new Set(rutas.filter(r => r.ciudad_id === filterCiudadId).map(r => r.id))
+      return viajantes.filter(v => v.ruta_id && rutaIds.has(v.ruta_id)).map(v => v.id)
+    }
+    return null
+  })()
 
   const fetchPayments = useCallback(async (currentPage: number) => {
     setIsLoading(true)
@@ -266,6 +288,7 @@ export default function PagosRecibidosPage() {
       })
       if (search) params.set("q", search)
       if (selectedCategoryId) params.set("category_id", selectedCategoryId)
+      if (effectiveViajanteIds?.length) params.set("viajante_ids", effectiveViajanteIds.join(","))
 
       const res = await fetch(`/api/payments/received?${params}`)
       const json = await res.json()
@@ -278,7 +301,8 @@ export default function PagosRecibidosPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [dateFrom, dateTo, search, selectedCategoryId])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateFrom, dateTo, search, selectedCategoryId, filterViajanteId, filterRutaId, filterCiudadId, viajantes, rutas])
 
   useEffect(() => {
     setPage(1)
@@ -470,6 +494,70 @@ export default function PagosRecibidosPage() {
                 />
               </div>
             </div>
+
+            {/* Ciudad / Ruta / Viajante filters */}
+            {(ciudades.length > 0 || rutas.length > 0 || viajantes.length > 0) && (
+              <div className="flex flex-wrap items-center gap-2">
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
+                {ciudades.length > 0 && (
+                  <Select
+                    value={filterCiudadId ?? "__all__"}
+                    onValueChange={(v) => { setFilterCiudadId(v === "__all__" ? null : v); setFilterRutaId(null); setFilterViajanteId(null) }}
+                  >
+                    <SelectTrigger className="h-7 text-xs w-[140px]">
+                      <SelectValue placeholder="Ciudad" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">Todas las ciudades</SelectItem>
+                      {ciudades.map(c => <SelectItem key={c.id} value={c.id}>{c.nombre}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+                {rutas.length > 0 && (
+                  <Select
+                    value={filterRutaId ?? "__all__"}
+                    onValueChange={(v) => { setFilterRutaId(v === "__all__" ? null : v); setFilterViajanteId(null) }}
+                  >
+                    <SelectTrigger className="h-7 text-xs w-[150px]">
+                      <SelectValue placeholder="Ruta" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">Todas las rutas</SelectItem>
+                      {(filterCiudadId ? rutas.filter(r => r.ciudad_id === filterCiudadId) : rutas).map(r => (
+                        <SelectItem key={r.id} value={r.id}>#{r.numero} {r.nombre}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {viajantes.length > 0 && (
+                  <Select
+                    value={filterViajanteId ?? "__all__"}
+                    onValueChange={(v) => setFilterViajanteId(v === "__all__" ? null : v)}
+                  >
+                    <SelectTrigger className="h-7 text-xs w-[160px]">
+                      <SelectValue placeholder="Viajante" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">Todos los viajantes</SelectItem>
+                      {(filterRutaId
+                        ? viajantes.filter(v => v.ruta_id === filterRutaId)
+                        : filterCiudadId
+                          ? viajantes.filter(v => { const ruta = rutas.find(r => r.id === v.ruta_id); return ruta?.ciudad_id === filterCiudadId })
+                          : viajantes
+                      ).map(v => <SelectItem key={v.id} value={v.id}>{v.nombre}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+                {(filterCiudadId || filterRutaId || filterViajanteId) && (
+                  <button
+                    onClick={() => { setFilterCiudadId(null); setFilterRutaId(null); setFilterViajanteId(null) }}
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <X className="h-3 w-3" />Limpiar
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Category filters */}
             {categories.length > 0 && (

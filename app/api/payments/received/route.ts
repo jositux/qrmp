@@ -43,6 +43,11 @@ export async function GET(request: Request) {
       query = query.eq("category_id", categoryId)
     }
 
+    const viajanteIds = searchParams.get("viajante_ids") || ""
+    if (viajanteIds) {
+      query = query.in("viajante_id", viajanteIds.split(","))
+    }
+
     const { data, error, count } = await query.range(offset, offset + limit - 1)
 
     if (error) {

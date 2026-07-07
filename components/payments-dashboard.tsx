@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -51,6 +51,10 @@ interface Viajante {
   dni: string
   nombre: string
 }
+
+interface CiudadLookup { id: string; nombre: string }
+interface RutaLookup { id: string; numero: number; nombre: string; ciudad_id: string | null }
+interface ViajanteLookup { id: string; nombre: string; ruta_id: string | null }
 
 interface Payment {
   id: string
@@ -245,6 +249,12 @@ function CategoryPopover({ payment, categories, updatingCategoryId, onUpdate, on
 export function PaymentsDashboard() {
   const [allPayments, setAllPayments] = useState<Payment[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+  const [ciudades, setCiudades] = useState<CiudadLookup[]>([])
+  const [rutas, setRutas] = useState<RutaLookup[]>([])
+  const [viajantesLookup, setViajantesLookup] = useState<ViajanteLookup[]>([])
+  const [filterCiudadId, setFilterCiudadId] = useState<string | null>(null)
+  const [filterRutaId, setFilterRutaId] = useState<string | null>(null)
+  const [filterViajanteId, setFilterViajanteId] = useState<string | null>(null)
   const [stats, setStats] = useState<Stats | null>(null)
   const [search, setSearch] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
@@ -286,12 +296,21 @@ export function PaymentsDashboard() {
     try {
       const res = await fetch("/api/categories")
       const data = await res.json()
-      if (data.categories) {
-        setCategories(data.categories)
-      }
+      if (data.categories) setCategories(data.categories)
     } catch (error) {
       console.error("Error fetching categories:", error)
     }
+  }
+
+  const fetchLookups = async () => {
+    const [c, r, v] = await Promise.all([
+      fetch("/api/ciudades").then(r => r.json()).catch(() => ({})),
+      fetch("/api/rutas").then(r => r.json()).catch(() => ({})),
+      fetch("/api/viajantes").then(r => r.json()).catch(() => ({})),
+    ])
+    if (c.ciudades) setCiudades(c.ciudades)
+    if (r.rutas) setRutas(r.rutas)
+    if (v.viajantes) setViajantesLookup(v.viajantes)
   }
 
   const fetchStats = useCallback(async () => {
@@ -309,7 +328,7 @@ export function PaymentsDashboard() {
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true)
-      await Promise.all([fetchPayments(), fetchStats(), fetchCategories()])
+      await Promise.all([fetchPayments(), fetchStats(), fetchCategories(), fetchLookups()])
       setIsLoading(false)
     }
     loadData()
@@ -324,6 +343,20 @@ export function PaymentsDashboard() {
     return () => clearTimeout(timer)
   }, [search])
 
+  const effectiveViajanteIds = useMemo((): Set<string> | null => {
+    if (filterViajanteId) return new Set([filterViajanteId])
+    if (filterRutaId) {
+      const ids = viajantesLookup.filter(v => v.ruta_id === filterRutaId).map(v => v.id)
+      return ids.length ? new Set(ids) : null
+    }
+    if (filterCiudadId) {
+      const rutaIds = new Set(rutas.filter(r => r.ciudad_id === filterCiudadId).map(r => r.id))
+      const ids = viajantesLookup.filter(v => v.ruta_id && rutaIds.has(v.ruta_id)).map(v => v.id)
+      return ids.length ? new Set(ids) : null
+    }
+    return null
+  }, [filterViajanteId, filterRutaId, filterCiudadId, viajantesLookup, rutas])
+
   // Filtrar pagos localmente para la tabla
   const filteredPayments = allPayments
     .filter((payment) => {
@@ -337,7 +370,9 @@ export function PaymentsDashboard() {
         !selectedStatus ||
         (selectedStatus === "approved" && payment.status === "approved") ||
         (selectedStatus === "pending" && payment.status !== "approved")
-      return matchesSearch && matchesCategory && matchesStatus
+      const matchesViajante = !effectiveViajanteIds ||
+        (payment.viajante_id ? effectiveViajanteIds.has(payment.viajante_id) : false)
+      return matchesSearch && matchesCategory && matchesStatus && matchesViajante
     })
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
@@ -900,6 +935,52 @@ export function PaymentsDashboard() {
                 </Button>
               )}
             </div>
+
+            {/* Ciudad / Ruta / Viajante */}
+            {(ciudades.length > 0 || rutas.length > 0 || viajantesLookup.length > 0) && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-muted-foreground hidden sm:block">Ruta:</span>
+                {ciudades.length > 0 && (
+                  <Select value={filterCiudadId ?? "__all__"} onValueChange={(v) => { setFilterCiudadId(v === "__all__" ? null : v); setFilterRutaId(null); setFilterViajanteId(null) }}>
+                    <SelectTrigger className="h-7 text-xs w-[140px]"><SelectValue placeholder="Ciudad" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">Todas las ciudades</SelectItem>
+                      {ciudades.map(c => <SelectItem key={c.id} value={c.id}>{c.nombre}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+                {rutas.length > 0 && (
+                  <Select value={filterRutaId ?? "__all__"} onValueChange={(v) => { setFilterRutaId(v === "__all__" ? null : v); setFilterViajanteId(null) }}>
+                    <SelectTrigger className="h-7 text-xs w-[150px]"><SelectValue placeholder="Ruta" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">Todas las rutas</SelectItem>
+                      {(filterCiudadId ? rutas.filter(r => r.ciudad_id === filterCiudadId) : rutas).map(r => (
+                        <SelectItem key={r.id} value={r.id}>#{r.numero} {r.nombre}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {viajantesLookup.length > 0 && (
+                  <Select value={filterViajanteId ?? "__all__"} onValueChange={(v) => setFilterViajanteId(v === "__all__" ? null : v)}>
+                    <SelectTrigger className="h-7 text-xs w-[160px]"><SelectValue placeholder="Viajante" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">Todos los viajantes</SelectItem>
+                      {(filterRutaId
+                        ? viajantesLookup.filter(v => v.ruta_id === filterRutaId)
+                        : filterCiudadId
+                          ? viajantesLookup.filter(v => { const r = rutas.find(r => r.id === v.ruta_id); return r?.ciudad_id === filterCiudadId })
+                          : viajantesLookup
+                      ).map(v => <SelectItem key={v.id} value={v.id}>{v.nombre}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+                {(filterCiudadId || filterRutaId || filterViajanteId) && (
+                  <Button variant="ghost" size="sm" onClick={() => { setFilterCiudadId(null); setFilterRutaId(null); setFilterViajanteId(null) }} className="h-7 text-xs text-muted-foreground">
+                    <X className="h-3 w-3 mr-1" />Limpiar
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </CardHeader>
         {/* Bulk action bar */}
