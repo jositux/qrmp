@@ -111,14 +111,22 @@ export default function LoginPage() {
                     )}
                   </Button>
                 </div>
-                <div className="mt-4 text-center text-sm text-muted-foreground">
-                  No tienes cuenta?{' '}
+                <div className="mt-4 flex flex-col gap-2 text-center text-sm text-muted-foreground">
                   <Link
-                    href="/auth/registro"
+                    href="/auth/recuperar"
                     className="text-primary underline underline-offset-4"
                   >
-                    Registrate
+                    ¿Olvidaste tu contraseña?
                   </Link>
+                  <span>
+                    No tienes cuenta?{' '}
+                    <Link
+                      href="/auth/registro"
+                      className="text-primary underline underline-offset-4"
+                    >
+                      Registrate
+                    </Link>
+                  </span>
                 </div>
               </form>
             </CardContent>

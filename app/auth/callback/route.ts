@@ -4,17 +4,17 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
+  const next = requestUrl.searchParams.get('next') ?? '/panel'
   const origin = requestUrl.origin
 
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
+
     if (!error) {
-      return NextResponse.redirect(`${origin}/dashboard`)
+      return NextResponse.redirect(`${origin}${next}`)
     }
   }
 
-  // Si hay error o no hay code, redirigir al error
   return NextResponse.redirect(`${origin}/auth/error`)
 }
